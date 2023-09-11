@@ -52,13 +52,19 @@ class CommentController(
         val anonymousKV = anonymous.map { it.user_id to it }.toMap()
 
         val commentTime = comment.list.map {
+            var isMyComment = false
+            if (it.user_id == userId) {
+                isMyComment = true
+            }
             if (it.is_anonymous && anonymousKV.containsKey(it.user_id)) {
                 it.nickname = "익명" + anonymousKV[it.user_id]!!.rowNum
+                it.user_id = null
+
             }
             if (it.modified_at == null) {
-                it.timeFormat(it, it.created_at.formatTime(), userId)
+                it.timeFormat(it, it.created_at.formatTime(), isMyComment)
             } else {
-                it.timeFormat(it, it.modified_at.formatTime() + "(수정됨)", userId)
+                it.timeFormat(it, it.modified_at.formatTime() + "(수정됨)", isMyComment)
             }
         }
         val pagingResponse = PagingResponse(commentTime, comment.pagination)
@@ -227,6 +233,9 @@ class CommentController(
         }
         if (comment.state == 2 || comment.state == 3) {
             return ResponseEntity.badRequest().body(Response.error("차단된 댓글입니다."))
+        }
+        if (comment.user_id == userId) {
+            return ResponseEntity.badRequest().body(Response.error("자신의 댓글은 신고할 수 없습니다."))
         }
         if (commentService.findCommentReport(
                 commentRequest.commentId

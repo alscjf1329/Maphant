@@ -13,7 +13,7 @@
         FROM user_bookmark as ub
                  JOIN board on board.id = ub.board_id
         WHERE ub.user_id = #{userId}
-          and board.state == 0
+          and board.state = 0
         ORDER BY board.id DESC
             LIMIT #{params.recordSize}
         OFFSET #{params.offset}

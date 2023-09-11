@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 data class ExtBoardDTO(
     val id: Int?,
-    @JsonIgnore
+//    @JsonIgnore
     val userId: Int,
     val parentId: Int?,
     val categoryId: Int,
@@ -80,6 +80,36 @@ data class ExtBoardDTO(
 
     fun addBookmark(bookmark: Boolean) {
         this.isBookmarked = bookmark
+    }
+
+    fun setIsAnonymous(): ExtBoardDTO {
+        if (isAnonymous == 0) {
+            return this
+        }
+        return ExtBoardDTO(
+            id,
+            -1,
+            parentId,
+            categoryId,
+            userNickname,
+            typeId,
+            title,
+            body,
+            state,
+            isHide,
+            isComplete,
+            isAnonymous,
+            createdAt,
+            modifiedAt,
+            commentCnt,
+            likeCnt,
+            reportCnt,
+            imagesUrlString,
+            isLike,
+            isMyBoard,
+            tags,
+            isBookmarked
+        )
     }
 }
 

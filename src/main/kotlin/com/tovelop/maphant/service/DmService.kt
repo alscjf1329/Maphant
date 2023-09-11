@@ -36,7 +36,7 @@ class DmService(
     @Transactional
     fun sendDm(userNickname:String, sender_id: Int, receiver_id: Int, content: String): DmDto {
         if(sender_id == receiver_id) throw IllegalStateException("자기 자신한테 쪽지를 보낼 수 없습니다.")
-
+        if(content.isNullOrEmpty()) throw IllegalStateException("content에 내용을 작성해 주세요.")
         val receiverNickname = userMapper.findNicknameIdBy(receiver_id);
         if(receiverNickname == null) {
             throw NullPointerException("receiver_id에 해당하는 user가 없습니다.")

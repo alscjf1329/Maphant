@@ -4,6 +4,7 @@ import com.tovelop.maphant.configure.security.PasswordEncoderBcrypt
 import com.tovelop.maphant.configure.security.UserDataService
 import com.tovelop.maphant.configure.security.token.TokenAuthToken
 import com.tovelop.maphant.dto.*
+import com.tovelop.maphant.mapper.ProfileMapper
 import com.tovelop.maphant.mapper.UserMapper
 import com.tovelop.maphant.service.UserService
 import com.tovelop.maphant.type.response.Response
@@ -23,6 +24,7 @@ class SignupController(
     @Autowired val userService: UserService,
     @Autowired val sendGrid: SendGrid,
     @Autowired val userDataService: UserDataService,
+    @Autowired val profileMapper: ProfileMapper,
 ) {
     @Autowired
     lateinit var passwordEncoder: PasswordEncoderBcrypt
@@ -176,6 +178,7 @@ class SignupController(
 
         sendGrid.sendSignUp(signupDTO.email)
         userService.signUp(signupDTO.toUserDTO(univId, passwordEncoder))
+
         return ResponseEntity.ok(Response.stateOnly(true))
     }
 

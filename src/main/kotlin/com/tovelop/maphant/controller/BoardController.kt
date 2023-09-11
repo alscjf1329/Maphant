@@ -167,15 +167,19 @@ class BoardController(
         if (auth.isNotLogged()) {
             return ResponseEntity.badRequest().body(Response.error<Any>("로그인 안됨"))
         }
-        val board = boardService.findBoard(boardId, auth.getUserId())
-        if (board == null || boardService.getIsHideByBoardId(boardId) == null) {
+        val tmpBoard = boardService.findBoard(boardId, auth.getUserId())
+        if (tmpBoard == null || boardService.getIsHideByBoardId(boardId) == null) {
             return ResponseEntity.badRequest().body(Response.error<Any>("게시글이 존재하지 않습니다."))
         }
         if (boardService.getIsHideByBoardId(boardId)!!) {
-            if (board.userId != auth.getUserId() && auth.getUserRole() != "admin") {
+            if (tmpBoard.userId != auth.getUserId() && auth.getUserRole() != "admin") {
                 return ResponseEntity.badRequest().body(Response.error<Any>("권한이 없습니다."))
             }
         }
+        //익명 게시글인 경우 userId 제공 안함 따라서 새로운 extBoardDTO 생성
+        //컨트롤러에서 userId를 이용함 따라서 userId를 매퍼단에서 가져오지 않게 수정하기는 힘듬.
+        val board = tmpBoard.setIsAnonymous()
+
         val pollId = pollService.getPollIdByBoardId(boardId)
         board.addBookmark(bookmarkService.isBookmarked(auth.getUserId(), boardId))
         //투표 없는 경우
@@ -262,7 +266,7 @@ class BoardController(
         boardService.insertBoard(boardDto)
         rateLimitingService.requestCheck(auth.getUserId(), "WRITE_POST")
 
-        if (board.poll != null) { //투표생성
+        if(board.poll != null && !board.poll.title.isNullOrEmpty() && !board.poll.options.isEmpty()) { //투표생성
             val poll = PollDTO(
                 board.poll.id,
                 boardDto.id as Int,

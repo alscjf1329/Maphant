@@ -208,12 +208,14 @@
     <select id="findDayBoardLogByDate" resultType="DayLogDTO">
         select DATE_FORMAT(created_at, '%Y-%m-%d'), count(*)
         from board
-        where created_at >= #{start} and #{end} >= created_at
+        where created_at >= #{start} and #{end} > created_at
+        group by DATE_FORMAT(created_at, '%Y-%m-%d')
     </select>
     <select id="findDayCommentLogByDate" resultType="DayLogDTO">
         select DATE_FORMAT(created_at, '%Y-%m-%d'), count(*)
         from comment
-        where created_at >= #{start} and #{end} >= created_at
+        where created_at >= #{start} and #{end} > created_at
+        group by DATE_FORMAT(created_at, '%Y-%m-%d')
     </select>
     <select id="findWeekLoginLogByDate" resultType="WeekLogDTO">
         select DATE_FORMAT(time, '%Y-%u'), count(*)

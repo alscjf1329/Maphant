@@ -42,7 +42,7 @@
         #{email}
     </foreach> ;
     </select>
-    <insert id="insertUser">
+    <insert id="insertUser" parameterType="UserDto" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO user (email, password, nickname, name, ph_num, sno, role, created_at, state, agreed_at,
                           lastmodified_at, univ_id)
         VALUES (#{email}, #{password}, #{nickname}, #{name}, #{phNum}, #{sno}, #{role}, NOW(), #{state}, NOW(),

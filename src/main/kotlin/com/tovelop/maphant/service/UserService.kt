@@ -1,13 +1,14 @@
 package com.tovelop.maphant.service
 
 import com.tovelop.maphant.dto.UserDTO
+import com.tovelop.maphant.mapper.ProfileMapper
 import com.tovelop.maphant.mapper.UserMapper
 import com.tovelop.maphant.utils.ValidationHelper
 import org.springframework.stereotype.Service
 
 
 @Service
-class UserService(val mapper: UserMapper) {
+class UserService(val mapper: UserMapper, val profileMapper: ProfileMapper) {
     fun insertCategoryMajorByEmail(email: String, category: String, major: String) {
         mapper.insertCategoryIdMajorIdByUserId(
             mapper.findUserIdByUserEmail(email),
@@ -154,5 +155,9 @@ class UserService(val mapper: UserMapper) {
 
     fun updateWithDrawUser(email: String) {
         mapper.updateWithDrawUser(email)
+    }
+
+    fun findUserIdByUserEmail(email: String): Int{
+        return mapper.findUserIdByUserEmail(email)
     }
 }

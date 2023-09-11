@@ -52,10 +52,11 @@
     </select>
 
     <update id="updateDfByBoardId">
-        UPDATE search_word sw
-        INNER JOIN search_word_inverse swi ON swi.board_id = #{boardId}
-        SET sw.df = sw.df - 1
-        WHERE sw.df > 0
+        UPDATE search_word_inverse swi
+            INNER JOIN search_word sw
+        ON swi.search_word_id = sw.id
+            SET sw.df = sw.df + 1
+        where swi.board_id = 534 AND sw.df > 0;
     </update>
 
 </mapper>

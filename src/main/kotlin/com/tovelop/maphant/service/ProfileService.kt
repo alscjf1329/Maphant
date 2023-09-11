@@ -21,7 +21,7 @@ class ProfileService(
     private val uploadLogService: UploadLogService,
     private val commentMapper: CommentMapper
 ) {
-    val defaultProfileImg = "https://tovelope.s3.ap-northeast-2.amazonaws.com/image_1.jpg"
+    val defaultProfileImg = "https://tovelope.s3.ap-northeast-2.amazonaws.com/default_profile_img.jpg"
 
     //프로필 이미지의 Dto 불러오기
     fun getNicknameAndBodyAndImage(targetUserId: Int): ProfileCategoryDTO =
@@ -63,13 +63,9 @@ class ProfileService(
     fun updateProfileNickname(userId: Int, nickname: String) =
         profileMapper.updateProfileNickname(userId, nickname)
 
-    fun updateProfileBody(userId: Int, body: String) {
-        existProfile(userId).let {
-            if (it) profileMapper.updateProfileBody(userId, body)
-            else profileMapper.insertProfileBody(userId, body)
-        }
+    fun updateProfileBody(userId: Int, body: String) =
+        profileMapper.updateProfileBody(userId, body)
 
-    }
 
     @Transactional
     fun updateProfileImage(userId: Int, imageUrl: String, file: MultipartFile): String {
@@ -79,27 +75,13 @@ class ProfileService(
         //uploadLog 남기기
         uploadLogService.storeUrl(userId, imageUrl, file)
 
-//        //현재 userId에 해당하는 profile이 있는지 확인
-//        val profile = profileMapper.findById(userId);
-//
-//        //profile이 현재 없다면 insert 아니면 update
-//        if (profile == null) profileMapper.insertProfile(userId, imageUrl)
-//        else profileMapper.updateProfileImage(userId, imageUrl)
-        existProfile(userId).let {
-            if (it) profileMapper.updateProfileImage(userId, imageUrl)
-            else profileMapper.insertProfile(userId, imageUrl)
-        }
+        profileMapper.updateProfileImage(userId, imageUrl)
 
         return imageUrl
     }
 
     fun updateProfileImageDefault(userId: Int) =
-        existProfile(userId).let {
-            if (it) profileMapper.updateProfileImage(userId, defaultProfileImg)
-            else profileMapper.insertProfile(userId, defaultProfileImg)
-        }
-
-    fun existProfile(userId: Int): Boolean = profileMapper.findById(userId) != null
+        profileMapper.updateProfileImage(userId, defaultProfileImg)
 
     fun getLikeBoardsList(userId: Int, params: PagingDto): PagingResponse<BoardResDto> {
         var count = profileMapper.findLikeBoardCntByUser(userId)

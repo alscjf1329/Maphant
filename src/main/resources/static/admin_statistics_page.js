@@ -4,9 +4,13 @@ $(document).ready(function() {
     const chartCanvas = document.getElementById('myChart');
     const ctx = chartCanvas.getContext('2d');
     let chart = null;
+    let countsValue = null;
 
     let currentDate = new Date(dateTextElement.text());
     let selectedMonth = currentDate.getMonth() + 1;
+
+    let menuElement = $(".sub-title.active").attr('id');
+    let menu = menuElement.replace("Menu", "");
 
     let labels = Array.from({ length: 7 }, (_, i) => {
         const loopDate = new Date(currentDate);
@@ -24,7 +28,7 @@ $(document).ready(function() {
         graphTitleElement.text(selectedMonth + "월의 데이터 통계");
     }
 
-    function requestStatistics(currentDate, labels) {
+    function requestStatistics(currentDate, labels, menu) {
         $.get({
             url: '/admin/statistics',
             data: {
@@ -33,9 +37,10 @@ $(document).ready(function() {
             },
             traditional: true,
             success: function(response) {
-                const visitorCountsValueInput = $(response).find('input[name=visitorCounts]');
-                const visitorCountsValue = JSON.parse(visitorCountsValueInput.attr('value'));
-                updateChart(labels, visitorCountsValue);
+                const inputName = menu + 'Counts';
+                const countsValueInput = $(response).find('input[name=' + inputName + ']');
+                countsValue = JSON.parse(countsValueInput.attr('value'));
+                updateChart(menu, labels, countsValue);
                 console.log("success");
             },
             error: function(error) {
@@ -44,8 +49,7 @@ $(document).ready(function() {
         });
     }
 
-
-    function updateChart(labels, visitorCountsValue) {
+    function updateChart(label, labels, countsValue) {
         if (chart) {
             chart.destroy();
         }
@@ -54,8 +58,8 @@ $(document).ready(function() {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: '방문자수',
-                    data: visitorCountsValue,
+                    label: label,
+                    data: countsValue,
                     borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 2,
                     fill: false
@@ -91,6 +95,23 @@ $(document).ready(function() {
             },
         });
     }
+
+    function changeMenu(newMenu) {
+        const activeMenu = document.querySelector('.sub-title.active');
+        if (activeMenu) {
+            activeMenu.classList.remove('active');
+        }
+        const newMenuElement = $("#" + newMenu + 'Menu');
+        if (newMenuElement) {
+            newMenuElement.addClass('active');
+        }
+        menuElement = newMenuElement;
+        menu = newMenu;
+        updateGraphTitle(selectedMonth);
+        requestStatistics(currentDate, labels, menu);
+        updateChart(menu, labels, countsValue);
+    }
+
     function changeDate(changeAmount) {
         const newDate = new Date(currentDate);
         newDate.setDate(newDate.getDate() + changeAmount);
@@ -118,9 +139,10 @@ $(document).ready(function() {
 
             dateTextElement.text(year + "." + month + "." + day + " (" + dayOfWeek + ")");
             updateGraphTitle(selectedMonth);
-            requestStatistics(currentDate, labels);
+            requestStatistics(currentDate, labels, menu);
         }
     }
+
     $(".date_button_on").click(function(e) {
         e.preventDefault();
         changeDate(-1);
@@ -129,15 +151,21 @@ $(document).ready(function() {
     $(".date_button_next").click(function(e) {
         e.preventDefault();
         const today = new Date();
-        if(currentDate.getMonth() === today.getMonth()){
+        if (currentDate.getMonth() === today.getMonth()) {
             if (currentDate.getDate() < today.getDate()) {
                 changeDate(1);
             }
-        }
-        else {
+        } else {
             changeDate(1);
         }
     });
+
+    $(".sub-title").click(function(e) {
+        e.preventDefault();
+        const newMenu = $(this).attr('id').replace("Menu", "");
+        changeMenu(newMenu);
+    });
+
     updateGraphTitle(selectedMonth);
-    requestStatistics(currentDate, labels);
+    requestStatistics(currentDate, labels, menu);
 });

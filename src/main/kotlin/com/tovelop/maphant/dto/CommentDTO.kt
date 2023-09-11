@@ -62,7 +62,7 @@ data class CommentRESDTO(
 data class CommentExtDTO(
     val id: Int,
     val parent_id: Int?,
-    val user_id: Int?,
+    var user_id: Int?,
     var nickname: String,
     val boardtype_id: Int,
     val board_type: String,
@@ -75,7 +75,7 @@ data class CommentExtDTO(
     val like_cnt: Int,
     val comment_id: Int?,
 ) {
-    fun timeFormat(comment: CommentExtDTO, time: String, authId: Int): FormatTimeDTO {
+    fun timeFormat(comment: CommentExtDTO, time: String, isMyComment: Boolean): FormatTimeDTO {
         return FormatTimeDTO(
             id = comment.id,
             parent_id = comment.parent_id,
@@ -92,7 +92,7 @@ data class CommentExtDTO(
             like_cnt = comment.like_cnt,
             comment_id = comment.comment_id,
             time = time,
-            isMyComment = comment.user_id == authId,
+            isMyComment = isMyComment
         )
     }
 }

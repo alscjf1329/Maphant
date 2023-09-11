@@ -25,6 +25,9 @@ class ProfileController(
     @GetMapping
     fun getProfile(@RequestParam targetUserId: Int?): ResponseEntity<Response<ProfileCategoryDTO>> {
         val userId: Int = (SecurityContextHolder.getContext().authentication as TokenAuthToken).getUserId()
+
+        if(userId == null)throw IllegalStateException("존재하지 않는 회원입니다")
+
         return ResponseEntity.ok()
             .body(Response.success(profileService.getNicknameAndBodyAndImage(targetUserId ?: userId)))
     }
@@ -55,6 +58,9 @@ class ProfileController(
         @RequestParam targetUserId: Int?
     ): ResponseEntity<Response<PagingResponse<CommentExtDTO>>> {
         val userId: Int = (SecurityContextHolder.getContext().authentication as TokenAuthToken).getUserId()
+
+        if(userId == null)throw IllegalStateException("존재하지 않는 회원입니다")
+
         return ResponseEntity.ok()
             .body(Response.success(profileService.getCommentList(userId, targetUserId ?: userId, pagingDto)))
     }
@@ -65,6 +71,9 @@ class ProfileController(
         @RequestParam targetUserId: Int?
     ): ResponseEntity<Response<PagingResponse<BoardResDto>>> {
         val userId: Int = (SecurityContextHolder.getContext().authentication as TokenAuthToken).getUserId()
+
+        if(userId == null)throw IllegalStateException("존재하지 않는 회원입니다")
+
         return ResponseEntity.ok()
             .body(Response.success(profileService.getBoardsList(userId, targetUserId ?: userId, pagingDto)))
     }
@@ -74,6 +83,9 @@ class ProfileController(
         @ModelAttribute @Valid pagingDto: PagingDto,
     ): ResponseEntity<Response<PagingResponse<BoardResDto>>> {
         val userId: Int = (SecurityContextHolder.getContext().authentication as TokenAuthToken).getUserId()
+
+        if(userId == null)throw IllegalStateException("존재하지 않는 회원입니다")
+
         return ResponseEntity.ok()
             .body(Response.success(profileService.getLikeBoardsList(userId, pagingDto)))
     }

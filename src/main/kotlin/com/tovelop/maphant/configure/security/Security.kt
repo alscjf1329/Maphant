@@ -55,8 +55,6 @@ class Security {
         http.authorizeHttpRequests { authorize -> authorize
             .requestMatchers("/admin/login").permitAll()
             .requestMatchers("/admin/**").hasRole("admin")
-            .requestMatchers("/user/signup").permitAll()
-            .requestMatchers("/user/validation/**").permitAll()
             .anyRequest().permitAll()
         }
 

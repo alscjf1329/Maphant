@@ -25,7 +25,7 @@ interface ProfileMapper {
 
     fun findAllBoardByIdWithPaging(userId: Int, targetUserId: Int, params: PagingDto): List<BoardResDto>
 
-    fun insertProfile(userId: Int, imageUrl: String): Boolean
+    fun insertProfile(userId: Int): Boolean
 
     fun getBoardCount(userId: Int): Int
     fun cntComment(userId: Int): Int

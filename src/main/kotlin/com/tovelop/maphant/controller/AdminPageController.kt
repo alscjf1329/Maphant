@@ -70,8 +70,14 @@ class AdminPageController(
         val visitorData = adminPageService.findDayLoginLogByDate(startDate, endDate)
         val dateCountMap = visitorData.associateBy({ it.date.format(formatter) }, { it.count })
         val visitorCounts = localDates.map { dateCountMap.getOrDefault(it.format(formatter), 0) }
-        val postCounts = listOf(50, 70, 40, 60, 90)
-        val commentCounts = listOf(200, 300, 150, 180, 250)
+
+        val postData = adminPageService.findDayBoardLogByDate(startDate, endDate)
+        val postCountMap = postData.associateBy({ it.date.format(formatter) }, { it.count })
+        val postCounts = localDates.map { postCountMap.getOrDefault(it.format(formatter), 0) }
+
+        val commentData = adminPageService.findDayCommentLogByDate(startDate, endDate)
+        val commentCountMap = commentData.associateBy({ it.date.format(formatter) }, { it.count })
+        val commentCounts = localDates.map { commentCountMap.getOrDefault(it.format(formatter), 0) }
 
         val actualCurrentDate = currentDate ?: LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd (E)"))
         model.addAttribute("infoBoxContent", "통계")

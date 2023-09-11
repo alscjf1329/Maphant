@@ -152,11 +152,11 @@ class AdminPageService(
         return adminPageMapper.findDayLoginLogByDate(start, end)
     }
 
-    fun findDayBoardLogByDate(start: LocalDateTime, end: LocalDateTime): List<DayLogDTO>{
+    fun findDayBoardLogByDate(start: LocalDate, end: LocalDate): List<DayLogDTO>{
         return adminPageMapper.findDayBoardLogByDate(start, end)
     }
 
-    fun findDayCommentLogByDate(start: LocalDateTime, end: LocalDateTime): List<DayLogDTO>{
+    fun findDayCommentLogByDate(start: LocalDate, end: LocalDate): List<DayLogDTO>{
         return adminPageMapper.findDayCommentLogByDate(start, end)
     }
 

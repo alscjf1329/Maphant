@@ -40,8 +40,8 @@ interface AdminPageMapper {
     fun findLoginLogByDate(start: LocalDateTime, end: LocalDateTime): Int
     fun findBoardLogByDate(start: LocalDateTime, end: LocalDateTime): Int
     fun findCommentLogByDate(start: LocalDateTime, end: LocalDateTime): Int
-    fun findDayBoardLogByDate(start: LocalDateTime, end: LocalDateTime): List<DayLogDTO>
-    fun findDayCommentLogByDate(start: LocalDateTime, end: LocalDateTime): List<DayLogDTO>
+    fun findDayBoardLogByDate(start: LocalDate, end: LocalDate): List<DayLogDTO>
+    fun findDayCommentLogByDate(start: LocalDate, end: LocalDate): List<DayLogDTO>
     fun findWeekLoginLogByDate(start: LocalDateTime, end: LocalDateTime): List<WeekLogDTO>
     fun findWeekBoardLogByDate(start: LocalDateTime, end: LocalDateTime): List<WeekLogDTO>
     fun findWeekCommentLogByDate(start: LocalDateTime, end: LocalDateTime): List<WeekLogDTO>

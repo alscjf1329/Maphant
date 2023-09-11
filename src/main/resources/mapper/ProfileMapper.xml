@@ -62,8 +62,8 @@
     </update>
 
     <insert id="insertProfile">
-        INSERT INTO profile (user_id, profile_img)
-        VALUES (#{userId}, #{imageUrl})
+        INSERT INTO profile (user_id)
+        VALUES (#{userId})
     </insert>
 
     <select id="findAllBoardByIdWithPaging" resultType="BoardResDto">
