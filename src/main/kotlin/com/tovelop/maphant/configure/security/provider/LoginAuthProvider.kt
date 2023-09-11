@@ -25,6 +25,11 @@ class LoginAuthProvider(
             throw BadCredentialsException("Invalid password")
         }
 
+        val state = userData.getUserData().state
+
+        if(state == 2) throw BadCredentialsException("제제된 사용자입니다.")
+        else if(state == 3) throw BadCredentialsException("탈퇴된 사용자입니다.")
+
         val auth = tokenRepository.generateToken(userData)
         return LoginAuthToken(auth.first, auth.second, userData)
     }

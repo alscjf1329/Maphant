@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface UserDataMapper {
     fun findUserByEmail(email: String): UserDataDTO?
+
+    fun updateUserDataByUserId(userId: Int): UserDataDTO?
 }

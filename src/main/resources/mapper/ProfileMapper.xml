@@ -8,14 +8,40 @@
         FROM profile
         WHERE user_id = #{user_id}
     </select>
-    <select id="findNicknameAndBodyAndImageById" resultType="ProfileNicknameAndBodyAndImageDto">
-        SELECT user.nickname as user_name,
-               body,
-               profile_img
-        FROM user LEFT OUTER JOIN profile
-            ON profile.user_id = user.id
+
+    <resultMap id="profileData" type="ProfileCategoryDTO">
+        <result property="nickname" column="nickname"/>
+        <result property="body" column="body"/>
+        <result property="profileImg" column="profile_img"/>
+        <collection property="category" ofType="UserDataCategoryDTO">
+            <result property="categoryId" column="category_id"/>
+            <result property="categoryName" column="category_name"/>
+            <result property="majorId" column="major_id"/>
+            <result property="majorName" column="major_name"/>
+        </collection>
+    </resultMap>
+
+    <select id="findNicknameAndBodyAndImageById" resultMap="profileData">
+        SELECT user.nickname as nickname,
+               profile.body  as body,
+               profile_img   as profile_img,
+               ucm.category_id,
+               category.name as category_name,
+               ucm.major_id,
+               major.name    as major_name
+        FROM user
+                 LEFT OUTER JOIN profile
+                                 ON profile.user_id = user.id
+                 join user_category_major ucm on user.id = ucm.user_id
+                 join major on ucm.major_id = major.id
+                 join category on ucm.category_id = category.id
         WHERE user.id = #{user_id}
     </select>
+
+    <insert id="insertProfileBody">
+        INSERT INTO profile (user_id, body)
+        VALUES (#{userId}, #{body})
+    </insert>
 
     <update id="updateProfileImage">
         UPDATE profile
@@ -41,37 +67,95 @@
     </insert>
 
     <select id="findAllBoardByIdWithPaging" resultType="BoardResDto">
-        SELECT
-            b.id as id,
-            category_id,
-            b.user_id as user_id,
-            board_type.name as type,
-            title,
-            body,
-            is_hide,
-            is_complete,
-            is_anonymous,
-            created_at,
-            modified_at,
-            comment_cnt,
-            like_cnt,
-            report_cnt,
-            images_url,
-            IF(blike.user_id IS NOT NULL, 1, 0) as isLike
+        SELECT b.id                                as id,
+               category_id,
+               b.user_id                           as user_id,
+               board_type.name                     as type,
+               title,
+               body,
+               is_hide,
+               is_complete,
+               is_anonymous,
+               created_at,
+               modified_at,
+               comment_cnt,
+               like_cnt,
+               report_cnt,
+               images_url,
+               IF(blike.user_id IS NOT NULL, 1, 0) as isLike
         FROM board b
                  INNER JOIN board_type ON b.type_id = board_type.id
                  LEFT OUTER JOIN board_like blike ON b.id = blike.board_id AND blike.user_id = #{userId}
-        WHERE b.user_id = #{userId} AND
-              state = 0
+        WHERE ((#{userId} != #{targetUserId} AND b.is_anonymous = 0 AND b.is_hide = 0) OR b.user_id = #{userId})
+          AND b.user_id = #{targetUserId}
         ORDER BY created_at DESC
-        LIMIT #{params.recordSize} OFFSET #{params.offset}
+            LIMIT #{params.recordSize}
+        OFFSET #{params.offset}
     </select>
 
     <select id="getBoardCount">
         SELECT COUNT(*)
         FROM board
-        WHERE user_id = #{userId} AND
-            state = 0
+        WHERE user_id = #{userId}
+          AND state = 0
+    </select>
+
+    <select id="cntComment">
+        SELECT comment_cnt
+        FROM user_count
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="cntAnonymousComment">
+        SELECT comment_anonymous_cnt
+        FROM user_count
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="cntBoard">
+        SELECT board_cnt
+        FROM user_count
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="cntAnonymousAndHideBoard">
+        SELECT board_anonymous_hide_cnt
+        FROM user_count
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="findLikeBoardWithPaging" resultType="BoardResDto">
+        SELECT b.id                                as id,
+               category_id,
+               b.user_id                           as user_id,
+               board_type.name                     as type,
+               title,
+               body,
+               is_hide,
+               is_complete,
+               is_anonymous,
+               created_at,
+               modified_at,
+               comment_cnt,
+               like_cnt,
+               report_cnt,
+               images_url,
+               IF(blike.user_id IS NOT NULL, 1, 0) as isLike
+        FROM board b
+                 INNER JOIN board_type ON b.type_id = board_type.id
+                 LEFT OUTER JOIN board_like blike ON b.id = blike.board_id AND blike.user_id = #{userId}
+        WHERE b.user_id = #{userId}
+          AND blike.user_id = #{userId}
+          AND b.state = 0
+        ORDER BY created_at DESC
+            LIMIT #{params.recordSize}
+        OFFSET #{params.offset}
+    </select>
+
+    <select id="findLikeBoardCntByUser">
+        SELECT COUNT(*)
+        FROM board_like
+        WHERE user_id = #{userId}
     </select>
 
 </mapper>

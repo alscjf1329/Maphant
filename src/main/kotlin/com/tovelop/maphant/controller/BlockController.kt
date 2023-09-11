@@ -18,11 +18,11 @@ class BlockController(
 ){
 
     @PostMapping("/{blockId}")
-    fun creatBlock(@PathVariable blockId:Int): ResponseEntity<Response<String>>{
+    fun creatBlock(@PathVariable blockedId:Int): ResponseEntity<Response<String>>{
         val auth = SecurityContextHolder.getContext().authentication!! as TokenAuthToken
         val userId: Int = auth.getUserId()
 
-        blockService.block(userId, blockId)
+        blockService.block(userId, blockedId)
         return ResponseEntity.ok().body(Response.success("해당 유저를 차단하였습니다."))
     }
     @DeleteMapping("/{blockedId}")

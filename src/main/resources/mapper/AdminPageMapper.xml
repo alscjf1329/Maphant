@@ -13,19 +13,21 @@
                board_user.id boardUserId, board_user.email boardUserEmail
         from (select board_id, user_id, report_id, reported_at, id
               from board_report
+              where state = 0
               order by reported_at
-                  limit #{reportSize} offset 0) as reports
+              limit #{reportSize} offset 0) as reports
                  join board on reports.board_id = board.id
-                 join user board_user on reports.user_id = board_user.id
+                 join user board_user on board.user_id = board_user.id
     </select>
     <select id="findBoardReportByMostReportedRanking" resultType="AdminBoardReportDTO">
         select board_ids.board_id boardId, board.title boardTitle, board.body boardBody,
                board_user.id boardUserId, board_user.email boardUserEmail
         from (select board_id
               from board_report
+              where state = 0
               group by board_id
               order by count(*) desc
-                  limit #{reportSize} offset 0) as board_ids
+              limit #{reportSize} offset 0) as board_ids
                  join board on board_id = board.id
                  join user board_user on board.user_id = board_user.id
     </select>
@@ -45,16 +47,18 @@
         select reports.comment_id commentId, comment.body commentBody, user.id commentUserId,user.email commentUserEmail
         from (select comment_id, user_id, report_id, id, reported_at
               from comment_report
+              where state = 0
               order by reported_at
                   limit #{reportSize} offset 0) as reports
                  join comment on reports.comment_id = comment.id
-                 join user on reports.user_id = user.id
+                 join user on comment.user_id = user.id
     </select>
     <select id="findCommentReportByMostReportedRanking" resultType="AdminCommentReportDTO">
         select comment_ids.comment_id commentId, comment.body commentBody,
                user.id commentUserId,user.email commentUserEmail
         from (select comment_id
               from comment_report
+              where state = 0
               group by comment_id
               order by count(*) desc
                   limit #{reportSize} offset 0) as comment_ids
@@ -94,14 +98,16 @@
         where user_id = #{userId}
     </select>
     <delete id="deleteRecentUserReportByUserId">
-        delete from user_report
-        where user_id = #{userId}
-          and deadline_at =
-              (select max(deadline_at)
-               from user_report
-               where user_id = #{userId});
-    </delete>
-    <update id="updateBoardStateByUserId">
+        delete ur
+        from user_report ur
+                 join (
+            select user_id, max(deadline_at) as max_deadline_at
+            from user_report
+            where user_id = #{userId}
+        ) max_report
+                      on ur.user_id = max_report.user_id and ur.deadline_at = max_report.max_deadline_at
+        where ur.user_id = #{userId};
+    </delete>    <update id="updateBoardStateByUserId">
         update board
         set state = #{afterState}
         where user_id = #{userId} and state = #{beforeState}
@@ -156,5 +162,75 @@
         select id, board_id boardId, body, report_cnt reportCnt
         from comment
         where user_id = #{userId} and state = 2
+    </select>
+    <select id="findReportByUserId" resultType="Boolean">
+        SELECT IF(EXISTS (SELECT * FROM user_report WHERE user_id = #{userId}), 1, 0)
+    </select>
+    <select id="findReportInfoByUserId" resultType="UserReportDTO">
+        SELECT user_report.id AS id,
+               user_report.user_id AS userId,
+               user_report.deadline_at AS deadlineAt,
+               user_report.sanction_reason AS sanctionReason
+        from user_report
+        where user_id = #{userId}
+    </select>
+    <update id="updateBoardReportStateByBoardId">
+        update board_report
+        set state = 1
+        where board_id = #{boardId} and state = 0
+    </update>
+    <update id="updateCommentReportStateByCommentId">
+        update comment_report
+        set state = 1
+        where comment_id = #{commentId} and state = 0
+    </update>
+    <select id="findLoginLogByDate" resultType="Int">
+        select count(*)
+        from log_login
+        where time >= #{start} and #{end} >= time
+    </select>
+    <select id="findBoardLogByDate" resultType="Int">
+        select count(*)
+        from board
+        where board.created_at >= #{start} and #{end} >= board.created_at
+    </select>
+    <select id="findCommentLogByDate" resultType="Int">
+        select count(*)
+        from comment
+        where comment.created_at >= #{start} and #{end} >= comment.created_at
+    </select>
+    <select id="findDayLoginLogByDate" resultType="DayLogDTO">
+        select DATE_FORMAT(time, '%Y-%m-%d'), count(*)
+        from log_login
+        where time >= #{start} and #{end} > time
+        group by DATE_FORMAT(time, '%Y-%m-%d')
+    </select>
+    <select id="findDayBoardLogByDate" resultType="DayLogDTO">
+        select DATE_FORMAT(created_at, '%Y-%m-%d'), count(*)
+        from board
+        where created_at >= #{start} and #{end} >= created_at
+    </select>
+    <select id="findDayCommentLogByDate" resultType="DayLogDTO">
+        select DATE_FORMAT(created_at, '%Y-%m-%d'), count(*)
+        from comment
+        where created_at >= #{start} and #{end} >= created_at
+    </select>
+    <select id="findWeekLoginLogByDate" resultType="WeekLogDTO">
+        select DATE_FORMAT(time, '%Y-%u'), count(*)
+        from log_login
+        where time >= #{start} and #{end} >= time
+        group by DATE_FORMAT(time, '%Y-%u')
+    </select>
+    <select id="findWeekBoardLogByDate" resultType="WeekLogDTO">
+        select DATE_FORMAT(created_at, '%Y-%u'), count(*)
+        from board
+        where created_at >= #{start} and #{end} >= created_at
+        group by DATE_FORMAT(created_at, '%Y-%u')
+    </select>
+    <select id="findWeekCommentLogByDate" resultType="WeekLogDTO">
+        select DATE_FORMAT(created_at, '%Y-%u'), count(*)
+        from comment
+        where created_at >= #{start} and #{end} >= created_at
+        group by DATE_FORMAT(created_at, '%Y-%u')
     </select>
 </mapper>

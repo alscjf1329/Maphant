@@ -12,8 +12,8 @@ data class UserDTO(
     val sno: String,
     val phNum: String?,
     val state: Int,
-    val role: String
-//    val agreedAt: LocalDate,
-//    val createdAt: LocalDate,
-//    val lastmodifiedAt: LocalDate
+    val role: String,
+    val agreedAt: LocalDate? = null,
+    val createdAt: LocalDate? = null,
+    val lastmodifiedAt: LocalDate? = null
 )

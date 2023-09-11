@@ -41,3 +41,6 @@ application-*.properties
 
 ### Key Files ###
 src/main/resources/firebase/serviceAccountKey.json
+
+### .DS_store ###
+**/.DS_Store

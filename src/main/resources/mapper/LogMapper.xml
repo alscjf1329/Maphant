@@ -7,4 +7,9 @@
         INSERT INTO Log (id,datetime,device,ip,state,user_id)
         VALUES (#{id},#{datetime},#{device},#{ip},#{state},#{userId})
     </insert>
+
+    <insert id="insertLoginLog">
+        insert into log_login(user_id, ip, time)
+        values (#{userId}, #{userIp}, #{loginTime});
+    </insert>
 </mapper>

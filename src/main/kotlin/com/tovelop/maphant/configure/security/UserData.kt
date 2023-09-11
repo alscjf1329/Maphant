@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails
 class UserData(
     private val email: String,
     private val password: String,
-    private val userData: UserDataDTO,
+    private var userData: UserDataDTO,
 ) : UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
         val authorities = mutableListOf<GrantedAuthority>()
@@ -39,11 +39,17 @@ class UserData(
 
     fun getUserData() = this.userData
 
+    fun setUserData(userData: UserDataDTO) {
+        this.userData = userData
+    }
+
     fun getUserID() = this.userData.id
 
     fun getUserCategories() = this.userData.category
 
     fun getUserRole() = this.userData.role
+
+    fun getUserStudentNo() = this.userData.studentNo
 
     fun zeroisePassword() {
         this.userData.password = ""

@@ -7,17 +7,26 @@
         SELECT id, etc, title, body, created_at, is_read
         FROM log_alert
         WHERE user_id = #{userId}
+        ORDER BY id DESC
+            LIMIT #{params.recordSize}
+        OFFSET #{params.offset}
     </select>
     <insert id="createNotification">
         INSERT INTO log_alert (user_id, title, body, etc, created_at)
         VALUES (#{notification.userId}, #{notification.title}, #{notification.body}, #{jsonStr},
                 NOW())
     </insert>
-    <update id="updateNotification">
+    <update id="updateNotificationReadAt">
         UPDATE log_alert
-        SET is_read = NOW()
+        SET is_read = #{readAt}
         WHERE id = #{id}
           and is_read is null
     </update>
+
+    <select id="cntNotificationsByUserId" resultType="int">
+        select COUNT(*) as cnt
+        from log_alert
+        where user_id = #{userId}
+    </select>
 
 </mapper>

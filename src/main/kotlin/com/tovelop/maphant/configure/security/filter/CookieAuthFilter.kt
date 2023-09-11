@@ -12,16 +12,14 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
-import org.springframework.stereotype.Component
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import org.springframework.security.web.util.matcher.RequestMatcher
 
 class CookieAuthFilter(authenticationManager: AuthenticationManager?)
-    : AbstractAuthenticationProcessingFilter("/admin/**", authenticationManager) {
+    : AbstractAuthenticationProcessingFilter(RequestMatcher { request ->
+    val path = request.servletPath
+    path.startsWith("/admin/") && path != "/admin/login"
+}, authenticationManager) {
 
-    override fun requiresAuthentication(request: HttpServletRequest, response: HttpServletResponse): Boolean {
-        return request.servletPath.startsWith("/admin/")
-    }
 
     init {
         this.authenticationManager = authenticationManager
@@ -61,7 +59,17 @@ class CookieAuthFilter(authenticationManager: AuthenticationManager?)
 
     override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
         val httpRequest = request as HttpServletRequest
-        if(httpRequest.cookies.size >= 2) {
+        var auth: String? = null
+        var sign: String? = null
+
+        val cookies = httpRequest.cookies
+        if(cookies != null) {
+            for(cookie in cookies) {
+                if("auth".equals(cookie.name)) auth = cookie.value
+                if("sign".equals(cookie.name)) sign = cookie.value
+            }
+        }
+        if(httpRequest.cookies != null && auth != null && sign != null) {
             super.doFilter(request, response, chain)
         } else {
             chain.doFilter(request, response)

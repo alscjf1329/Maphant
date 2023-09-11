@@ -1,0 +1,48 @@
+<body>
+<div class="container">
+  <section class="left-section">
+    <h2>게시판 신고 목록</h2>
+    <button class="sort-button" data-sort-type="mostReportedRanking" data-section="board">
+      신고 횟수순
+    </button>
+    <button class="sort-button" data-sort-type="time" data-section="board">
+      시간순
+    </button>
+    <table>
+      <thead>
+      <tr>
+        <th>
+          게시판 ID
+        </th>
+        <th>
+          유저 ID
+        </th>
+        <th>
+          제목
+        </th>
+        <th>
+          내용
+        </th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="report : ${boardReport}">
+        <td th:text="${report.boardId}">
+        </td>
+        <td th:text="${report.boardUserEmail}">
+        </td>
+        <td th:text="${report.boardTitle}">
+        </td>
+        <td th:text="${report.boardBody}">
+        </td>
+        <td>
+          <button th:data-board-id="${report.boardId}" class="info-button-board">자세히보기</button>
+          <button th:data-board-id="${report.boardId}" class="sanction-button-board">제재</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+<script th:src="@{/admin_board_page.js}"></script>
+</body>

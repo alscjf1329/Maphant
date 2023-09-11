@@ -23,6 +23,10 @@ interface UserMapper {
     fun updateUserPasswordByEmail(email: String, password: String)
     fun updateUserNicknameByEmail(email: String, nickname: String)
     fun updateUserPhoneNumByEmail(email: String, phNum: String)
+    fun findCategoryIdByEmail(email: String): List<Int>
+    fun findCategoryIdByName(name: String): Int
+    fun findMajorIdByEmail(email: String): List<Int>
+    fun findMajorIdByName(name: String): Int
     fun findPasswordByEmail(email: String): String
     fun findNicknameByEmail(email: String): String
     fun findStateByUserId(userId: Int): Int
@@ -30,6 +34,7 @@ interface UserMapper {
     fun getAllMajors(): List<String>
     fun getAllUnivNames(): List<String>
     fun insertCategoryIdMajorIdByUserId(userId: Int, categoryId: Int, majorId: Int)
+    fun deleteCategoryIdMajorIdByUserId(userId: Int, categoryId: Int, majorId: Int)
     fun findUserIdByUserEmail(email: String): Int
     fun findCategoryIdByCategoryName(categoryName: String): Int
     fun findMajorIdByMajorName(majorName: String): Int
@@ -41,4 +46,8 @@ interface UserMapper {
     fun searchUserByNickname(nickname: String): List<UserNicknameDTO>
 
     fun countById(userId: Int): Int
+
+    fun withDrawUser(email: String)
+
+    fun updateWithDrawUser(email: String)
 }

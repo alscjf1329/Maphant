@@ -1,0 +1,37 @@
+a{
+    text-decoration: none;
+    color:#ffffff;
+}
+.menu-bar{
+    background-color: #777;
+    overflow: auto;
+}
+.menu-bar a{
+    padding:12px;
+    display:inline-block;
+    font-size:18px;
+    float:left;
+}
+.menu-bar a:hover{
+    background-color: #000;
+}
+.menu-bar a.active{
+    background-color: #DAD8EC;
+}
+/* 헤더 스타일 */
+header {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 1em 0;
+}
+/* 푸터 스타일 */
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 1em 0;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}

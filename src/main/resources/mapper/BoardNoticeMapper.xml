@@ -2,9 +2,32 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.tovelop.maphant.mapper.AdminPageMapper">
+<mapper namespace="com.tovelop.maphant.mapper.BoardNoticeMapper">
     <insert id="insertNotice">
-        insert into board_notice(board_type, title, body, images_url)
-            values (#{boardType}, #{title}, #{body}, #{imagesUrl})
+        insert into board_notice(id, board_type, title, body, images_url, created_at, modified_at)
+        values (null, #{boardType}, #{title}, #{body}, #{imagesUrl}, NOW(), null)
     </insert>
+    <select id="findBoard" resultType="BoardNoticeDTO">
+        select *
+        from board_notice
+        where id = #{noticeId}
+    </select>
+    <update id="updateNotice" parameterType="com.tovelop.maphant.dto.UpdateBoardNoticeDTO">
+        update board_notice
+        set title       = #{title},
+            body        = #{body},
+            images_url  = #{imagesUrl},
+            modified_at = NOW()
+        where id = #{noticeId}
+    </update>
+    <delete id="deleteNotice">
+        delete
+        from board_notice
+        where id = #{noticeId}
+    </delete>
+    <select id="findNoticeList" resultType="BoardNoticeListDTO">
+        select id, title, images_url, created_at
+        from board_notice
+        order by created_at desc
+    </select>
 </mapper>

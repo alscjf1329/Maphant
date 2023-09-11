@@ -13,5 +13,29 @@
         FROM user_bookmark as ub
                  JOIN board on board.id = ub.board_id
         WHERE ub.user_id = #{userId}
+          and board.state == 0
+        ORDER BY board.id DESC
+            LIMIT #{params.recordSize}
+        OFFSET #{params.offset}
+    </select>
+
+    <select id="getBoardCount">
+        SELECT COUNT(*)
+        FROM user_bookmark as ub
+        WHERE ub.user_id = #{userId}
+    </select>
+
+    <delete id="deleteBoardById">
+        DELETE
+        FROM user_bookmark as ub
+        WHERE ub.user_id = #{userId}
+          and ub.board_id = #{boardId}
+    </delete>
+
+    <select id="isBookmarked">
+        SELECT *
+        FROM user_bookmark ub
+        WHERE ub.user_id = #{userId}
+          and ub.board_id = #{boardId}
     </select>
 </mapper>

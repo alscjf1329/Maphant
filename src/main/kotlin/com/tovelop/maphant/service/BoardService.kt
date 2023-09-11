@@ -2,16 +2,24 @@ package com.tovelop.maphant.service
 
 import com.tovelop.maphant.dto.*
 import com.tovelop.maphant.mapper.BoardMapper
+import com.tovelop.maphant.mapper.TagMapper
 import com.tovelop.maphant.type.paging.Pagination
 import com.tovelop.maphant.type.paging.PagingDto
 import com.tovelop.maphant.type.paging.PagingResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.util.Collections
 import java.util.Random
 
 
 @Service
-class BoardService(@Autowired val boardMapper: BoardMapper,@Autowired private val redisService: RedisService) {
+class BoardService(@Autowired val boardMapper: BoardMapper,
+                   @Autowired private val redisService: RedisService,
+                   @Autowired private val tagMapper: TagMapper,
+                   @Autowired private val pollService: PollService) {
+    fun getABoardCnt(parentId:Int):Int{
+        return boardMapper.getABoardCnt(parentId)
+    }
     fun getBoardTypeIdByBoardTypeName(boardTypeName: String): Int {
         return boardMapper.getBoardTypeIdByBoardTypeName(boardTypeName)
     }
@@ -22,7 +30,7 @@ class BoardService(@Autowired val boardMapper: BoardMapper,@Autowired private va
 
     fun findBoardList(findBoardDTO: FindBoardDTO, userId: Int, categoryId: Int): List<PageBoardDTO> {
         val startRow = (findBoardDTO.page - 1) * findBoardDTO.pageSize
-        return boardMapper.findBoardList(findBoardDTO, startRow, categoryId)
+        return boardMapper.findBoardList(userId,findBoardDTO, startRow, categoryId)
     }
 
     fun getBoardSizeByCategoryIdAndBoardTypeId(categoryId: Int, boardTypeId: Int): Int {
@@ -31,10 +39,13 @@ class BoardService(@Autowired val boardMapper: BoardMapper,@Autowired private va
 
     fun insertBoard(boardDTO: BoardDTO) {
         boardMapper.insertBoard(boardDTO)
+        println("boardId = ${boardDTO.id}")
     }
 
     fun findBoard(boardId: Int, userId: Int): ExtBoardDTO? {
-        return boardMapper.findBoard(boardId)?.toExtBoardDTO(findBoardLike(boardId, userId))
+        val board = boardMapper.findBoardById(userId,boardId)
+        board?.tags = tagMapper.findBoardTags(boardId)
+        return board
     }
 
     fun updateBoard(updateBoardDTO: UpdateBoardDTO) {
@@ -72,8 +83,19 @@ class BoardService(@Autowired val boardMapper: BoardMapper,@Autowired private va
         boardMapper.insertBoardReport(boardId, userId, reportId)
     }
 
-    fun findBoardByKeyword(keyword: String): List<BoardDTO> {
-        return boardMapper.findBoardByKeyword(keyword)
+    fun findBoardByKeyword(keyword: String, boardTypeId: Int, categoryId: Int): List<BoardDTO> {
+        return boardMapper.findBoardByKeyword(keyword, boardTypeId, categoryId)
+    }
+
+    fun findBoardListBySearch(boardSearchDto:BoardSearchDto,pagingDto: PagingDto, categoryId: Int, userId: Int): PagingResponse<BoardSearchResponseDto> {
+
+        val count = boardMapper.countBoardListBySearch(boardSearchDto,categoryId);
+        if(count < 1) return PagingResponse(Collections.emptyList(),Pagination(0,pagingDto))
+
+        val pagination = Pagination(count,pagingDto)
+        val boardList = boardMapper.findBoardListBySearch(boardSearchDto, pagingDto, categoryId, userId)
+
+        return PagingResponse(boardList,pagination)
     }
 
     fun isInCategory(categoryId: Int): Boolean {
@@ -91,7 +113,7 @@ class BoardService(@Autowired val boardMapper: BoardMapper,@Autowired private va
 
     fun isInReportByBoardId(boardId: Int, userId: Int): Boolean {
         val boardReportDTO = boardMapper.isInReportByBoardId(boardId, userId)
-        return boardReportDTO != null
+        return boardReportDTO != 0
     }
 
     fun isInReportId(reportId: Int): Boolean {
@@ -118,19 +140,27 @@ class BoardService(@Autowired val boardMapper: BoardMapper,@Autowired private va
         val childBoard = boardMapper.findBoard(childBoardId)
         return childBoard?.parentId == parentBoardId
     }
+
     fun updateStateOfBoard(boardId: Int, state: Int) {
         boardMapper.updateStateOfBoard(boardId, state)
     }
+
     fun findAnswerBoardListByParentBoardId(parentBoardId: Int): List<BoardDTO> {
         return boardMapper.findAnswerBoardListByParentBoardId(parentBoardId)
     }
+
     fun getAllBoardType(): MutableList<BoardTypeDTO> {
         return boardMapper.getAllBoardType()
     }
 
-    fun findHotBoardList(userId: Int, category: Int, boardTypeId: Int?, pagingDto: PagingDto): PagingResponse<HotBoardDto> {
+    fun findHotBoardList(
+        userId: Int,
+        category: Int,
+        boardTypeId: Int?,
+        pagingDto: PagingDto
+    ): PagingResponse<HotBoardDto> {
         //페이지가 1일떈 새로운 seed값 생성 10분 후 삭제
-        if(pagingDto.page == 1) {
+        if (pagingDto.page == 1) {
             redisService.set("seed|$userId", Random().nextLong().toString())
             redisService.expire("seed|$userId", 60 * 10)
         }
@@ -138,27 +168,42 @@ class BoardService(@Autowired val boardMapper: BoardMapper,@Autowired private va
         var seed = redisService.get("seed|$userId")?.toLong();
 
         //사용자가 page가 1이아닌 2부터 요청할 경우 && redis에 seed값이 없을 경우 null일 수 있음
-        if(seed == null) {
+        if (seed == null) {
             seed = Random().nextLong()
             redisService.set("seed|$userId", seed.toString())
             redisService.expire("seed|$userId", 60 * 10)
         }
 
-        val pagination:Pagination
-        val hotBoards:List<HotBoardDto>
+        val pagination: Pagination
+        val hotBoards: List<HotBoardDto>
 
 
-        if(boardTypeId != null) {
-            val count = boardMapper.getHotBoardCountWithBoardType(category,boardTypeId);
-            pagination = Pagination(count,pagingDto)
-            hotBoards = boardMapper.findHotBoardsWithBoardType(userId,category,boardTypeId, seed, pagingDto)
-        }else {
+        if (boardTypeId != null) {
+            val count = boardMapper.getHotBoardCountWithBoardType(category, boardTypeId);
+            pagination = Pagination(count, pagingDto)
+            hotBoards = boardMapper.findHotBoardsWithBoardType(userId, category, boardTypeId, seed, pagingDto)
+        } else {
             val count = boardMapper.getHotBoardCount(category);
-            pagination = Pagination(count,pagingDto)
-            hotBoards = boardMapper.findHotBoards(userId,category, seed, pagingDto)
+            pagination = Pagination(count, pagingDto)
+            hotBoards = boardMapper.findHotBoards(userId, category, seed, pagingDto)
         }
 
-        return PagingResponse(hotBoards,pagination)
+        return PagingResponse(hotBoards, pagination)
+    }
+
+    fun findLastInsertId(): Int {
+        return boardMapper.findLastInsertId()
+    }
+
+    fun getPollBoardList(userId: Int ,boardTypeId: Int?, categoryId: Int, pagingDto: PagingDto): PagingResponse<PageBoardDTO> {
+        val count = boardMapper.countPollBoardList(categoryId,boardTypeId)
+
+        val pagination = Pagination(count,pagingDto)
+
+        val boardList = boardMapper.getPollBoardList(userId,categoryId,boardTypeId,pagingDto)
+
+        return PagingResponse(boardList,pagination)
+
     }
 }
 

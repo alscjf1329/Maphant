@@ -27,21 +27,21 @@
         </if>
     </select>
 
-    <select id="findDmListWithPaging" resultType="ResultDmDto">
-        SELECT id, IF(is_from_sender = #{isSender}, 1, 0) as is_me, content, time, is_read,
-        room_id,
-        visible
-        FROM dm
-        WHERE room_id = #{room_id}
-        <if test="visible != null and visible.length > 0">
-            AND visible IN
-            <foreach item="item" collection="visible" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
---         ORDER BY time DESC
-        LIMIT #{params.recordSize} OFFSET #{params.offset}
-    </select>
+<!--    <select id="findDmListWithPaging" resultType="ResultDmDto">-->
+<!--        SELECT id, IF(is_from_sender = #{isSender}, 1, 0) as is_me, content, time, is_read,-->
+<!--        room_id,-->
+<!--        visible-->
+<!--        FROM dm-->
+<!--        WHERE room_id = #{room_id}-->
+<!--        <if test="visible != null and visible.length > 0">-->
+<!--            AND visible IN-->
+<!--            <foreach item="item" collection="visible" open="(" separator="," close=")">-->
+<!--                #{item}-->
+<!--            </foreach>-->
+<!--        </if>-->
+<!--&#45;&#45;         ORDER BY time DESC-->
+<!--        LIMIT #{params.recordSize} OFFSET #{params.offset}-->
+<!--    </select>-->
 
     <update id="updateNotReadDm">
         UPDATE dm
@@ -70,16 +70,54 @@
           AND visible = #{oldVisible}
     </update>
 
+<!--    <select id="findDmCount">-->
+<!--        SELECT COUNT(*)-->
+<!--        FROM dm-->
+<!--        WHERE room_id = #{room_id}-->
+<!--        <if test="visible != null and visible.length > 0">-->
+<!--            AND visible IN-->
+<!--            <foreach item="item" collection="visible" open="(" separator="," close=")">-->
+<!--                #{item}-->
+<!--            </foreach>-->
+<!--        </if>-->
+<!--    </select>-->
+
     <select id="findDmCount">
         SELECT COUNT(*)
         FROM dm
-        WHERE room_id = #{room_id}
-        <if test="visible != null and visible.length > 0">
-            AND visible IN
-            <foreach item="item" collection="visible" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
+        WHERE room_id = #{room_id} AND
+              id >= #{cursor}
     </select>
 
+    <select id="findDmListWithPaging" resultType="ResultDmDto">
+        SELECT id, IF(is_from_sender = #{isSender}, 1, 0) as is_me, content, time, is_read,
+        room_id,
+        visible
+        FROM dm
+        WHERE room_id = #{room_id} AND
+              id >= #{cursor}
+        LIMIT #{params.recordSize} OFFSET #{params.offset}
+    </select>
+
+    <select id="findDmListWithCursorBasedPaging" resultType="ResultDmDto">
+        select id,
+               IF(is_from_sender = #{isSender}, 1, 0) as is_me,
+               content,
+               time,
+               is_read,
+               room_id,
+               visible
+        from dm
+        where room_id = #{room_id} AND
+              #{pagingCursor} > id AND
+              id >= #{dmCursor}
+        order by id desc
+        LIMIT #{limit}
+    </select>
+
+    <select id="findLastDmId">
+        select MAX(id) + 1
+        from dm
+        where room_id = #{room_id}
+    </select>
 </mapper>

@@ -5,6 +5,8 @@ import com.tovelop.maphant.configure.security.filter.LoginAuthFilter
 import com.tovelop.maphant.configure.security.filter.TokenAuthFilter
 import com.tovelop.maphant.configure.security.provider.LoginAuthProvider
 import com.tovelop.maphant.configure.security.provider.TokenAuthProvider
+import com.tovelop.maphant.mapper.TokenMapper
+import com.tovelop.maphant.service.LogService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -28,11 +30,17 @@ class Security {
     @Autowired
     lateinit var tokenAuthProvider: TokenAuthProvider
 
+    @Autowired
+    lateinit var logService: LogService
+
+    @Autowired
+    lateinit var tokenMapper: TokenMapper
+
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain? {
         http.csrf { it.disable() }
         http.addFilterBefore(
-            LoginAuthFilter(authenticationManager(http)),
+            LoginAuthFilter(authenticationManager(http), logService, tokenMapper),
             UsernamePasswordAuthenticationFilter::class.java
         ).addFilterAfter(
             CookieAuthFilter(authenticationManager(http)),
@@ -47,6 +55,8 @@ class Security {
         http.authorizeHttpRequests { authorize -> authorize
             .requestMatchers("/admin/login").permitAll()
             .requestMatchers("/admin/**").hasRole("admin")
+            .requestMatchers("/user/signup").permitAll()
+            .requestMatchers("/user/validation/**").permitAll()
             .anyRequest().permitAll()
         }
 

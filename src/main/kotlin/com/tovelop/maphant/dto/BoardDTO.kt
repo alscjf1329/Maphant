@@ -21,26 +21,27 @@ data class BoardDTO(
     val reportCnt: Int,
     val imagesUrl: String?
 ){
-    fun toExtBoardDTO(isLike: Boolean): ExtBoardDTO {
-        return ExtBoardDTO(
-            id,
-            parentId,
-            categoryId,
-            userId,
-            typeId,
-            title,
-            body,
-            state,
-            isHide,
-            isComplete,
-            isAnonymous,
-            createdAt,
-            modifiedAt,
-            commentCnt,
-            likeCnt,
-            reportCnt,
-            imagesUrl,
-            isLike
-        )
-    }
+//    fun toExtBoardDTO(isLike: Boolean, tags:List<ReqTagDTO>): ExtBoardDTO {
+//        return ExtBoardDTO(
+//            id,
+//            parentId,
+//            categoryId,
+//            userId,
+//            typeId,
+//            title,
+//            body,
+//            state,
+//            isHide,
+//            isComplete,
+//            isAnonymous,
+//            createdAt,
+//            modifiedAt,
+//            commentCnt,
+//            likeCnt,
+//            reportCnt,
+//            imagesUrl,
+//            isLike,
+//            tags
+//        )
+//    }
 }

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tovelop.maphant.mapper.BannerMapper">
+    <insert id="insertBanner">
+        insert into banner(title, company, images_url, url)
+            values (#{title}, #{company}, #{imagesUrl}, #{url})
+    </insert>
+    <delete id="deleteBanner">
+        delete from banner
+        where id = #{bannerId}
+    </delete>
+    <select id="findBannerByBannerId" resultType="BannerDTO">
+        select *
+        from banner
+        where id = #{bannerId}
+    </select>
+    <select id="findBannerByCompany">
+        select *
+        from banner
+        where company like '%#{company}%'
+    </select>
+    <update id="updateTitleByBannerId">
+        update banner
+        set title = #{title}
+        where banner_id = #{bannerId}
+    </update>
+    <update id="updateImagesUrlByBannerId">
+        update banner
+        set images_url = #{imagesUrl}
+        where banner_id = #{bannerId}
+    </update>
+    <update id="updateUrlByBannerId">
+        update banner
+        set url = #{url}
+        where banner_id = #{bannerId}
+    </update>
+    <select id="sumAllPay" resultType="Int">
+        select sum(pay)
+        from banner
+    </select>
+    <select id="findPayByBannerId" resultType="Int">
+        select pay
+        from banner
+        where id = #{bannerId}
+    </select>
+    <select id="findCountColumnOnBanner" resultType="Int">
+        select max(id)
+        from banner
+    </select>
+    <select id="getBannerByBannerId" resultType="GetBannerDTO">
+        select title, images_url, url
+        from banner
+        where id = #{bannerId}
+    </select>
+    <select id="findBannerIdByMaxPay" resultType="Int">
+        select id
+        from banner
+        where pay = (
+            select max(pay)
+            from banner)
+    </select>
+</mapper>

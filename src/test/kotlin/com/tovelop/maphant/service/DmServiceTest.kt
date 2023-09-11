@@ -4,11 +4,14 @@ import com.tovelop.maphant.dto.ResultDmDto
 import com.tovelop.maphant.dto.RoomDto
 import com.tovelop.maphant.dto.RoomListResultDto
 import com.tovelop.maphant.dto.VisibleChoices
+import com.tovelop.maphant.mapper.BlockMapper
 import com.tovelop.maphant.mapper.DmMapper
 import com.tovelop.maphant.mapper.RoomMapper
 import com.tovelop.maphant.mapper.UserMapper
+import com.tovelop.maphant.type.paging.CursorDto
 import com.tovelop.maphant.type.paging.Pagination
 import com.tovelop.maphant.type.paging.PagingDto
+import com.tovelop.maphant.type.paging.dm.DmCursorPagingResponse
 import com.tovelop.maphant.type.paging.dm.DmPagingResponse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
@@ -35,6 +38,9 @@ class DmServiceTest {
 
     @Mock
     private lateinit var fcmService: FcmService
+
+    @Mock
+    private lateinit var blockMapper: BlockMapper
 
     @InjectMocks
     private lateinit var dmService: DmService
@@ -103,7 +109,7 @@ class DmServiceTest {
         val userNickname = "user"
         val content = "test"
         val room = RoomDto(
-            1, "test", sender_id, receiver_id, LocalDateTime.now(), false, false,0,0
+            1, "test", sender_id, receiver_id, LocalDateTime.now(), false, false,0,0,0,0
         )
         whenever(roomMapper.findRoom(sender_id,receiver_id)).thenReturn(room)
         whenever(userMapper.findNicknameIdBy(receiver_id)).thenReturn("test")
@@ -114,7 +120,8 @@ class DmServiceTest {
         verify(roomMapper, times(0)).findRoom(receiver_id,sender_id)
         verify(roomMapper, times(0)).createRoom(any());
         verify(dmMapper, times(1)).createDm(any())
-        verify(roomMapper).updateSenderUnreadCountAndLastContent(room.id,content);
+        verify(roomMapper).updateRoomWhenSendDm(any(), eq(content), eq(true), eq(room.id));
+
     }
 
     @Test
@@ -126,7 +133,7 @@ class DmServiceTest {
         val userNickname = "user"
         val content = "test"
         val room = RoomDto(
-            1, "test", receiver_id, sender_id, LocalDateTime.now(), false, false,0,0
+            1, "test", receiver_id, sender_id, LocalDateTime.now(), false, false,0,0,0,0
         )
         whenever(roomMapper.findRoom(sender_id,receiver_id)).thenReturn(null)
         whenever(roomMapper.findRoom(receiver_id,sender_id)).thenReturn(room)
@@ -138,7 +145,7 @@ class DmServiceTest {
         verify(roomMapper, times(1)).findRoom(receiver_id,sender_id)
         verify(roomMapper, times(0)).createRoom(any());
         verify(dmMapper, times(1)).createDm(any())
-        verify(roomMapper).updateReceiverUnreadCountAndLastContent(room.id,content);
+        verify(roomMapper).updateRoomWhenSendDm(any(), eq(content), eq(false), eq(room.id));
     }
 
     @Test
@@ -150,7 +157,7 @@ class DmServiceTest {
         val userNickname = "user"
         val content = "test"
         val room = RoomDto(
-            1, "test", sender_id, receiver_id, LocalDateTime.now(), false, false,0,0
+            1, "test", sender_id, receiver_id, LocalDateTime.now(), false, false,0,0,0,0
         )
         whenever(roomMapper.findRoom(sender_id,receiver_id)).thenReturn(null).thenReturn(room)
         whenever(roomMapper.findRoom(receiver_id,sender_id)).thenReturn(null)
@@ -163,7 +170,7 @@ class DmServiceTest {
         verify(roomMapper, times(1)).findRoom(receiver_id,sender_id)
         verify(roomMapper, times(1)).createRoom(any());
         verify(dmMapper, times(1)).createDm(any())
-        verify(roomMapper).updateSenderUnreadCountAndLastContent(room.id,content);
+        verify(roomMapper).updateRoomWhenSendDm(any(), eq(content), eq(true), eq(room.id));
     }
 
     @Test
@@ -172,12 +179,12 @@ class DmServiceTest {
         //given
         val meId = 1;
         val roomId = 1;
-        val params = PagingDto(1,10);
+        val params = CursorDto(0,10);
         whenever(roomMapper.findRoomById(roomId)).thenReturn(null)
 
         //when
         val exception = assertThrows<NullPointerException> {
-            dmService.getDmList(meId, roomId, params)
+            dmService.getDmListWithCursorBasedPaging(meId, roomId, params.cursor,params.limit)
         }
 
         //then
@@ -190,15 +197,15 @@ class DmServiceTest {
         //given
         val meId = 1;
         val roomId = 1;
-        val params = PagingDto(1,10);
+        val params = CursorDto(0,10);
         val room = RoomDto(
-            1, "test", 2, 3, LocalDateTime.now(), false, false,0,0
+            1, "test", 2, 3, LocalDateTime.now(), false, false,0,0,0,0
         )
         whenever(roomMapper.findRoomById(roomId)).thenReturn(room)
 
         //when
         val exception = assertThrows<NullPointerException> {
-            dmService.getDmList(meId, roomId, params)
+            dmService.getDmListWithCursorBasedPaging(meId, roomId, params.cursor,params.limit)
         }
 
         //then
@@ -207,41 +214,40 @@ class DmServiceTest {
 
     @Test
     @DisplayName("roomId에 해당하는 대화방이 있으면서 로그인한 유저가 sender로 만들어진 대화방이라면 dm list를 반환한다.")
-    fun getDmListWithmeIsSender() {
+    fun getDmListWithMeIsSender() {
         //given
         val meId = 1;
         val roomId = 1;
-        val params = PagingDto(1,10);
+        val params = CursorDto(0,10);
         val isSender = true
         val room = RoomDto(
-            1, "test", meId, 3, LocalDateTime.now(), false, false,0,0
+            1, "test", meId, 3, LocalDateTime.now(), false, false,0,0,0,0
         )
         val count = 10
-        val pagination = Pagination(count,params)
-        val list = listOf<ResultDmDto>(ResultDmDto(1,true,"test",LocalDateTime.now(),false,roomId,VisibleChoices.BOTH))
+        val list = listOf(ResultDmDto(1,true,"test",LocalDateTime.now(),false,roomId,VisibleChoices.BOTH))
         val otherName = "otherName"
 
         whenever(roomMapper.findRoomById(roomId)).thenReturn(room)
-        whenever(dmMapper.findDmCount(roomId,VisibleChoices.BOTH,VisibleChoices.ONLY_SENDER)).thenReturn(count)
-        whenever(dmMapper.findDmListWithPaging(isSender,roomId, params, VisibleChoices.BOTH, VisibleChoices.ONLY_SENDER))
+        whenever(dmMapper.findDmListWithCursorBasedPaging(isSender,roomId, params.cursor, 0, params.limit))
             .thenReturn(list)
         whenever(userMapper.findNicknameIdBy(room.receiver_id)).thenReturn(otherName)
 
-        val expectResult = DmPagingResponse(room.receiver_id, otherName, list, pagination)
+        val expectResult = DmCursorPagingResponse(3,otherName,list,null)
 
         //when
-        val result = dmService.getDmList(meId, roomId, params) as DmPagingResponse
+        val result = dmService.getDmListWithCursorBasedPaging(meId, roomId, params.cursor,params.limit)
+
 
         //then
         assert(result.list == expectResult.list)
-        assert(result.pagination == expectResult.pagination)
+        assert(result.nextCursor == expectResult.nextCursor)
         assert(result.other_id == expectResult.other_id)
         assert(result.other_nickname == expectResult.other_nickname)
 
         verify(dmMapper).updateNotReadDm(roomId,!isSender)
         verify(dmMapper).updateSenderUnreadDmZero(roomId)
-        verify(dmMapper).findDmCount(roomId,VisibleChoices.BOTH,VisibleChoices.ONLY_SENDER)
-        verify(dmMapper).findDmListWithPaging(isSender,roomId, params, VisibleChoices.BOTH, VisibleChoices.ONLY_SENDER)
+        verify(dmMapper).findLastDmId(roomId)
+        verify(dmMapper).findDmListWithCursorBasedPaging(isSender,roomId, params.cursor, 0, params.limit)
         verify(userMapper).findNicknameIdBy(room.receiver_id)
     }
 
@@ -251,37 +257,36 @@ class DmServiceTest {
         //given
         val meId = 1;
         val roomId = 1;
-        val params = PagingDto(1,10);
+        val params = CursorDto(0,10);
         val isSender = false
         val room = RoomDto(
-            1, "test", 2, meId, LocalDateTime.now(), false, false,0,0
+            1, "test", 3, meId, LocalDateTime.now(), false, false,0,0,0,0
         )
         val count = 10
-        val pagination = Pagination(count,params)
-        val list = listOf<ResultDmDto>(ResultDmDto(1,true,"test",LocalDateTime.now(),false,roomId,VisibleChoices.BOTH))
+        val list = listOf(ResultDmDto(1,true,"test",LocalDateTime.now(),false,roomId,VisibleChoices.BOTH))
         val otherName = "otherName"
 
         whenever(roomMapper.findRoomById(roomId)).thenReturn(room)
-        whenever(dmMapper.findDmCount(roomId,VisibleChoices.BOTH,VisibleChoices.ONLY_RECEIVER)).thenReturn(count)
-        whenever(dmMapper.findDmListWithPaging(isSender,roomId, params, VisibleChoices.BOTH, VisibleChoices.ONLY_RECEIVER))
+        whenever(dmMapper.findDmListWithCursorBasedPaging(isSender,roomId, params.cursor, 0, params.limit))
             .thenReturn(list)
         whenever(userMapper.findNicknameIdBy(room.sender_id)).thenReturn(otherName)
 
-        val expectResult = DmPagingResponse(room.sender_id, otherName, list, pagination)
+        val expectResult = DmCursorPagingResponse(3,otherName,list,null)
 
         //when
-        val result = dmService.getDmList(meId, roomId, params) as DmPagingResponse
+        val result = dmService.getDmListWithCursorBasedPaging(meId, roomId, params.cursor,params.limit)
+
 
         //then
         assert(result.list == expectResult.list)
-        assert(result.pagination == expectResult.pagination)
+        assert(result.nextCursor == expectResult.nextCursor)
         assert(result.other_id == expectResult.other_id)
         assert(result.other_nickname == expectResult.other_nickname)
 
         verify(dmMapper).updateNotReadDm(roomId,!isSender)
         verify(dmMapper).updateReceiverUnreadDmZero(roomId)
-        verify(dmMapper).findDmCount(roomId,VisibleChoices.BOTH,VisibleChoices.ONLY_RECEIVER)
-        verify(dmMapper).findDmListWithPaging(isSender,roomId, params, VisibleChoices.BOTH, VisibleChoices.ONLY_RECEIVER)
+        verify(dmMapper).findLastDmId(roomId)
+        verify(dmMapper).findDmListWithCursorBasedPaging(isSender,roomId, params.cursor, 0, params.limit)
         verify(userMapper).findNicknameIdBy(room.sender_id)
     }
 
@@ -308,7 +313,7 @@ class DmServiceTest {
         //given
         val meId = 1;
         val roomId = 1;
-        val room = RoomDto(roomId,"test",2,3,LocalDateTime.now(),false,false,0,0)
+        val room = RoomDto(roomId,"test",2,3,LocalDateTime.now(),false,false,0,0,0,0)
         whenever(roomMapper.findRoomById(roomId)).thenReturn(room)
 
         //when
@@ -326,16 +331,14 @@ class DmServiceTest {
         //given
         val meId = 1;
         val roomId = 1;
-        val room = RoomDto(roomId,"test",meId,3,LocalDateTime.now(),false,false,0,0)
+        val room = RoomDto(roomId,"test",meId,3,LocalDateTime.now(),false,false,0,0,0,0)
         whenever(roomMapper.findRoomById(roomId)).thenReturn(room)
 
         //when
         dmService.deleteRoom(meId,roomId);
 
         //then
-        verify(dmMapper).updateDmVisible(roomId, VisibleChoices.BOTH, VisibleChoices.ONLY_RECEIVER)
-        verify(dmMapper).updateDmVisible(roomId, VisibleChoices.ONLY_SENDER, VisibleChoices.NOBODY)
-        verify(roomMapper).updateSenderIsDeletedAndSenderUnreadCountZero(roomId)
+        verify(roomMapper).updateWhenSenderIsDeleted(roomId)
     }
 
     @Test
@@ -344,16 +347,14 @@ class DmServiceTest {
         //given
         val meId = 1;
         val roomId = 1;
-        val room = RoomDto(roomId,"test",2,meId,LocalDateTime.now(),false,false,0,0)
+        val room = RoomDto(roomId,"test",2,meId,LocalDateTime.now(),false,false,0,0,0,0)
         whenever(roomMapper.findRoomById(roomId)).thenReturn(room)
 
         //when
         dmService.deleteRoom(meId,roomId);
 
         //then
-        verify(dmMapper).updateDmVisible(roomId, VisibleChoices.BOTH, VisibleChoices.ONLY_SENDER)
-        verify(dmMapper).updateDmVisible(roomId, VisibleChoices.ONLY_RECEIVER, VisibleChoices.NOBODY)
-        verify(roomMapper).updateReceiverIsDeletedAndReceiverUnreadCountZero(roomId)
+        verify(roomMapper).updateWhenReceiverIsDeleted(roomId)
     }
 
 }

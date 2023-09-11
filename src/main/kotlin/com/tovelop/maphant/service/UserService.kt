@@ -44,6 +44,32 @@ class UserService(val mapper: UserMapper) {
         mapper.updateUserPhoneNumByEmail(email, newPhoneNum)
     }
 
+    fun insertUserCategoryMajorByEmail(email: String, newCategoryId: Int, newMajorId: Int) {
+        val userId = mapper.findUserIdByUserEmail(email)
+        mapper.insertCategoryIdMajorIdByUserId(userId, newCategoryId, newMajorId)
+    }
+
+    fun deleteCategoryIdMajorIdByUserId(email: String, categoryId: Int, majorId: Int) {
+        val userId = mapper.findUserIdByUserEmail(email)
+        mapper.deleteCategoryIdMajorIdByUserId(userId, categoryId, majorId)
+    }
+
+    fun findCategoryIdByEmail(email: String): List<Int> {
+        return mapper.findCategoryIdByEmail(email)
+    }
+
+    fun findCategoryIdByName(name: String): Int {
+        return mapper.findCategoryIdByName(name)
+    }
+
+    fun findMajorIdByEmail(email: String): List<Int> {
+        return mapper.findMajorIdByEmail(email)
+    }
+
+    fun findMajorIdByName(name: String): Int {
+        return mapper.findMajorIdByName(name)
+    }
+
     fun signUp(user: UserDTO): Boolean {
         insertUser(user)
         return true
@@ -51,7 +77,7 @@ class UserService(val mapper: UserMapper) {
 
     fun login(email: String, password: String): String? {
         // 로그인 로직
-        val user = getUser(listOf(email))
+        val user = getUser(email)
         if (user != null && user.password == password) {
             return user.id.toString()
         }
@@ -63,9 +89,9 @@ class UserService(val mapper: UserMapper) {
         return universityName == mapper.findUniversityUrlBy(univId)
     }
 
-    fun getUser(emails: List<String>): UserDTO? {
+    fun getUser(email: String): UserDTO {
         // 사용자 조회 로직
-        return mapper.findUserByEmail(emails).firstOrNull()
+        return mapper.findUserByEmail(listOf(email))[0]
     }
 
     fun insertUser(user: UserDTO) {
@@ -120,5 +146,13 @@ class UserService(val mapper: UserMapper) {
 
     fun updateUserRole(role: String, id: Int) {
         mapper.updateUserRole(role, id)
+    }
+
+    fun withDrawUser(email: String) {
+        mapper.withDrawUser(email)
+    }
+
+    fun updateWithDrawUser(email: String) {
+        mapper.updateWithDrawUser(email)
     }
 }

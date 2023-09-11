@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tovelop.maphant.mapper.TokenMapper">
+    <insert id="insertToken">
+        insert into user_token (user_id, public_key)
+        values (#{userId}, #{token})
+    </insert>
+
+    <select id="getTokensByUserId">
+        select public_key
+        from user_token
+        where user_id = #{userId}
+    </select>
+</mapper>

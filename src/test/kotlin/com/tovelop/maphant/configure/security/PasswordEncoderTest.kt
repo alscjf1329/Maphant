@@ -30,9 +30,9 @@ class PasswordEncoderTest {
     @Test
     @DisplayName("Bcrypt Hello")
     fun test3() {
-        val pw = "Hello"
+        val pw = "1234"
         val encoded = bcrypt.encode(pw)
-        bcrypt.matches(pw, encoded)
+        println(bcrypt.matches(pw, "\$2a\$10\$ycg2xVBep3kJAuQE397Hde515OBPxVZH2qP5WKoVz31m1n/x11Jm6"))
         println(encoded)
     }
 }

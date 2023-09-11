@@ -21,6 +21,17 @@
                 #{receiver_is_deleted})
     </insert>
 
+    <update id="updateRoomWhenSendDm">
+        UPDATE room
+        SET time = #{time},
+            last_content = #{content},
+            sender_is_deleted = 0,
+            receiver_is_deleted = 0,
+            sender_unread_count = IF(#{isSender},sender_unread_count,sender_unread_count+1),
+            receiver_unread_count = IF(#{isSender},receiver_unread_count+1,receiver_unread_count)
+        WHERE id = #{room_id}
+    </update>
+
     <update id="updateSenderUnreadCountAndLastContent">
         UPDATE room
         SET last_content = #{content}, receiver_unread_count = receiver_unread_count+1
@@ -74,17 +85,65 @@
     </select>
 
 
-    <update id="updateSenderIsDeletedAndSenderUnreadCountZero">
+    <update id="updateWhenSenderIsDeleted">
         UPDATE room
         SET sender_is_deleted = true,
-            sender_unread_count = 0
+            sender_unread_count = 0,
+            sender_dm_cursor = (
+                SELECT MAX(id) + 1
+                FROM dm
+                WHERE room_id = #{room_id}
+            )
         WHERE id = #{room_id}
     </update>
 
-    <update id="updateReceiverIsDeletedAndReceiverUnreadCountZero">
+    <update id="updateWhenReceiverIsDeleted">
         UPDATE room
         SET receiver_is_deleted = true,
-            receiver_unread_count = 0
+            receiver_unread_count = 0,
+            receiver_dm_cursor = (
+                SELECT MAX(id) + 1
+                FROM dm
+                WHERE room_id = #{room_id}
+            )
+        WHERE id = #{room_id}
+    </update>
+
+    <update id="updateSenderDmCursor">
+        UPDATE room
+        SET sender_dm_cursor = (
+            SELECT MAX(id) + 1
+            FROM dm
+            WHERE room_id = #{room_id}
+        )
+        WHERE id = #{room_id}
+    </update>
+
+    <update id="updateReceiverDmCursor">
+        UPDATE room
+        SET receiver_dm_cursor = (
+            SELECT MAX(id) + 1
+            FROM dm
+            WHERE room_id = #{room_id}
+        )
+        WHERE id = #{room_id}
+    </update>
+
+    <update id="updateSenderIsDelete">
+        UPDATE room
+        SET sender_is_deleted = false
+        WHERE id = #{room_id}
+    </update>
+
+    <update id="updateReceiverIsDeleted">
+        UPDATE room
+        SET receiver_is_deleted = false
+        WHERE id = #{room_id}
+    </update>
+
+    <update id="updateRoomTime">
+        UPDATE room
+        SET time = #{time}
         WHERE id = #{room_id}
     </update>
 

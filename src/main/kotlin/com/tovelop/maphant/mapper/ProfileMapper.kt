@@ -11,19 +11,28 @@ import org.springframework.web.multipart.MultipartFile
 @Repository
 interface ProfileMapper {
     // user테이블의 id 값으로 프로필 사진 불러오기
-    fun findNicknameAndBodyAndImageById(userId:Int):ProfileNicknameAndBodyAndImageDto
+    fun findNicknameAndBodyAndImageById(userId: Int): ProfileCategoryDTO
 
     fun findById(userId: Int): ProfileDto?
 
-    fun updateProfileImage(userId: Int, imageUrl:String):Boolean
+    fun insertProfileBody(userId: Int, body: String): Boolean
 
-    fun updateProfileNickname(userId: Int, nickname: String):Boolean
+    fun updateProfileImage(userId: Int, imageUrl: String): Boolean
 
-    fun updateProfileBody(userId: Int, body: String):Boolean
+    fun updateProfileNickname(userId: Int, nickname: String): Boolean
 
-    fun findAllBoardByIdWithPaging(userId: Int, params: PagingDto): List<BoardResDto>
+    fun updateProfileBody(userId: Int, body: String): Boolean
+
+    fun findAllBoardByIdWithPaging(userId: Int, targetUserId: Int, params: PagingDto): List<BoardResDto>
 
     fun insertProfile(userId: Int, imageUrl: String): Boolean
 
     fun getBoardCount(userId: Int): Int
+    fun cntComment(userId: Int): Int
+    fun cntAnonymousComment(userId: Int): Int
+    fun cntBoard(userId: Int): Int
+    fun cntAnonymousAndHideBoard(userId: Int): Int
+    fun findLikeBoardWithPaging(userId: Int, params: PagingDto): List<BoardResDto>
+
+    fun findLikeBoardCntByUser(userId: Int): Int
 }

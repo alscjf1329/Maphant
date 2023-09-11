@@ -46,10 +46,11 @@
     </update>
 
     <select id="getPollIdByBoardId" resultType="int">
-        SELECT poll.id
+        SELECT DISTINCT poll.id
         FROM poll,
              board
-        WHERE board_id = board.id
+        WHERE board_id = #{board.id}
+          and poll.state != 2
     </select>
 
     <resultMap id="pollOptionResultMap" type="com.tovelop.maphant.dto.PollOption">
@@ -82,5 +83,126 @@
                  JOIN poll_user pu on pu.poll_id = poll.id
         WHERE poll.id = #{pollId}
           and pu.user_id = #{userId}
+          and poll.state != 2
+    </select>
+
+    <resultMap id="pollInfoByBoardIdResultMap" type="com.tovelop.maphant.dto.PollInfoDTO">
+        <result property="title" column="title"/>
+        <result property="expireDate" column="expire_date"/>
+        <result property="state" column="state"/>
+        <result property="selectedOptionId" column="poll_option"/>
+        <collection property="pollOptions" ofType="com.tovelop.maphant.dto.PollOption">
+            <id property="optionId" column="id"/>
+            <result property="optionName" column="option_name"/>
+            <result property="optionCount" column="option_cnt"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectPollInfoByBoardId" resultMap="pollInfoByBoardIdResultMap">
+        SELECT poll.title       as title,
+               poll.expire_date as expire_date,
+               poll.state       as state,
+               pu.poll_option   as poll_option,
+               po.id            as id,
+               po.option_name   as option_name,
+               po.option_cnt    as option_cnt
+        FROM poll
+                 INNER JOIN poll_option po on poll.id = po.poll_id
+                 LEFT OUTER JOIN poll_user pu on pu.poll_id = poll.id
+        WHERE poll.board_id = #{boardId}
+          and poll.state != 2
+    </select>
+
+    <resultMap id="isPolledResultMap" type="com.tovelop.maphant.dto.PollInfoDTO">
+        <result property="title" column="title"/>
+        <result property="expireDate" column="expire_date"/>
+        <result property="state" column="state"/>
+        <collection property="pollOptions" ofType="com.tovelop.maphant.dto.PollOption">
+            <id property="optionId" column="id"/>
+            <result property="optionName" column="option_name"/>
+            <result property="optionCount" column="option_cnt"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectPollInfo" resultMap="isPolledResultMap">
+        SELECT poll.title       as title,
+               poll.expire_date as expire_date,
+               poll.state       as state,
+               po.id            as id,
+               po.option_name   as option_name,
+               po.option_cnt    as option_cnt
+        FROM poll
+                 JOIN poll_option po on poll.id = po.poll_id
+        WHERE poll.id = #{pollId}
+          and poll.state != 2
+    </select>
+
+    <select id="isPollOption" resultType="int">
+        select *
+        from poll_option
+        where poll_id = #{pollId}
+          and id = #{pollOptionId};
+    </select>
+
+    <select id="isExistencePollByBoardId" resultType="int">
+        select *
+        from poll
+        where board_id = #{boardId}
+          and (state = 0 or state = 1);
+    </select>
+
+    <update id="deletePollByBoardId">
+        update poll
+        set state = 2
+        where board_id = #{boardId}
+          and (state = 0 or state = 1);
+    </update>
+
+    <update id="deletePollByPollId">
+        update poll
+        set state = 2
+        where id = #{pollId}
+          and (state = 0 or state = 1);
+    </update>
+
+    <update id="closePollByBoardId">
+        update poll
+        set state = 1
+        where board_id = #{boardId}
+          and state = 0;
+    </update>
+
+    <update id="closePollByPollId">
+        update poll
+        set state = 1
+        where id = #{boardId}
+          and state = 0;
+    </update>
+
+    <select id="isPollUserByPollId" resultType="int">
+        select *
+        from poll,
+             board
+        where board_id = board.id
+          and poll.id = #{pollId}
+          and user_id = #{userId}
+          and poll.state != 2;
+    </select>
+
+    <select id="isPollUserByBoardId" resultType="int">
+        select *
+        from poll,
+             board
+        where board_id = board.id
+          and board_id = #{boardId}
+          and user_id = #{userId}
+          and poll.state != 2;
+    </select>
+
+    <select id="isPolledUser" resultType="int">
+        SELECT *
+        FROM poll_user
+        WHERE user_id = #{userId}
+          and poll_id = #{pollId};
     </select>
 </mapper>

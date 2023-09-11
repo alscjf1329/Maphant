@@ -6,7 +6,7 @@ data class PollInfoDTO(
     var title: String = "",
     var expireDate: LocalDateTime? = LocalDateTime.now(),
     var state: Char = 't',
-    var selectedOptionId: Int? = 0,
+    var selectedOptionId: Int? = null,
     var pollOptions: List<PollOption>? = null
 )
 

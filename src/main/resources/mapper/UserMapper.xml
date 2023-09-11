@@ -3,6 +3,17 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.tovelop.maphant.mapper.UserMapper">
+    <insert id="withDrawUser">
+        INSERT INTO log_user (email, withdraw_at)
+        VALUES (#{email}, NOW())
+    </insert>
+    <update id="updateWithDrawUser">
+        UPDATE user user
+            JOIN log_user log_user
+        on user.email = log_user.email
+            SET user.email = log_user.id
+        WHERE log_user.email = #{email}
+    </update>
     <update id="updateUserStateByUserId">
         UPDATE user
         SET state           = #{state},
@@ -46,14 +57,12 @@
     <select id="findUniversityIdBy" resultType="int">
         SELECT id
         FROM univ
-        WHERE name = #{univName}
-        LIMIT 1
+        WHERE name = #{univName} LIMIT 1
     </select>
     <select id="findUniversityUrlBy" resultType="String">
         SELECT link
         FROM univ
-        WHERE id = #{univId}
-        LIMIT 1
+        WHERE id = #{univId} LIMIT 1
     </select>
     <select id="isUniversityExist" resultType="Boolean">
         SELECT EXISTS(SELECT * FROM univ WHERE id = #{universityId})
@@ -82,6 +91,26 @@
             lastmodified_at = NOW()
         WHERE email = #{email}
     </update>
+    <select id="findCategoryIdByEmail" resultType="Int">
+        select user_category_major.category_id
+        from user_category_major
+                 join user on #{email} = user.email and user_category_major.user_id = user.id
+    </select>
+    <select id="findCategoryIdByName" resultType="Int">
+        select id
+        from category
+        where name = #{name}
+    </select>
+    <select id="findMajorIdByEmail" resultType="Int">
+        select user_category_major.major_id
+        from user_category_major
+                 join user on #{email} = user.email and user_category_major.user_id = user.id
+    </select>
+    <select id="findMajorIdByName" resultType="Int">
+        select id
+        from major
+        where name = #{name}
+    </select>
     <select id="findPasswordByEmail" resultType="String">
         SELECT password
         FROM user
@@ -113,6 +142,13 @@
         INSERT INTO user_category_major(user_id, category_id, major_id)
         VALUES (#{userId}, #{categoryId}, #{majorId})
     </insert>
+    <delete id="deleteCategoryIdMajorIdByUserId">
+        DELETE
+        FROM user_category_major
+        WHERE user_id = #{userId}
+          AND category_id = #{categoryId}
+          AND major_id = #{majorId}
+    </delete>
     <select id="findUserIdByUserEmail" resultType="Int">
         SELECT id
         FROM user
@@ -121,14 +157,12 @@
     <select id="findCategoryIdByCategoryName" resultType="Int">
         SELECT id
         FROM category
-        WHERE name = #{categoryName}
-        LIMIT 1
+        WHERE name = #{categoryName} LIMIT 1
     </select>
     <select id="findMajorIdByMajorName" resultType="Int">
         SELECT id
         FROM major
-        WHERE name = #{majorName}
-        LIMIT 1
+        WHERE name = #{majorName} LIMIT 1
     </select>
 
     <select id="findNicknameIdBy" resultType="String">
@@ -144,8 +178,7 @@
     <select id="searchUserByNickname" resultType="com.tovelop.maphant.dto.user.UserNicknameDTO">
         SELECT id, nickname
         FROM user
-        WHERE nickname like CONCAT(#{nickname}, '%')
-        LIMIT 50
+        WHERE nickname like CONCAT(#{nickname}, '%') LIMIT 50
     </select>
 
     <select id="countById">

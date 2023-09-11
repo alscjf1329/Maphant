@@ -10,10 +10,10 @@
 <body>
   <div class="login-wrapper">
     <h2>Login</h2>
-    <form id="login-form">
+    <form id="login-form" onsubmit="loginHandler(); return false;">
       <input id="user_email" type="email" placeholder="이메일을 입력해주세요">
       <input id="user_password" type="password"placeholder="패스워드를 입력해주세요">
-      <input type="button" value="Login" onclick="loginHandler()">
+      <input type="submit" value="Login">
     </form>
   </div>
   <script>
@@ -33,7 +33,7 @@
 
           if(email == "" || password == "") alert("이메일 또는 패스워드를 올바르게 입력해주세요");
 
-          fetch("http://localhost:8080/user/login", {
+          fetch("https://dev.api.tovelop.esm.kr/user/login", {
               method: "POST",
               headers: {
                   "Content-type": "application/json"
@@ -45,14 +45,18 @@
           })
               .then(res => res.json())
               .then(res => {
-                  const pubKey = res["pubKey"];
-                  const privKey = res["privKey"];
+                  if(res["success"]) {
+                      const pubKey = res["pubKey"];
+                      const privKey = res["privKey"];
 
-                  setCookie("auth", pubKey);
-                  setCookie("sign", privKey);
+                      setCookie("auth", pubKey);
+                      setCookie("sign", privKey);
 
-                  location.href = "/admin/";
-              })
+                      location.href = "/admin/";
+                  } else if(!res["success"]) {
+                      alert(res["message"]);
+                  }
+              });
       }
   </script>
 </body>

@@ -8,8 +8,6 @@ import org.springframework.stereotype.Repository
 @Mapper
 @Repository
 interface PollMapper {
-
-    //    fun insertPoll(id: Int?, boardId: Int, title: String, expireDateTime: LocalDateTime?): Int
     fun insertPoll(poll: PollDTO)
 
     fun insertPollOption(pollId: Int, option: String)
@@ -24,8 +22,29 @@ interface PollMapper {
 
     fun updateCount(optionId: Int, pollId: Int)
 
-    fun getPollIdByBoardId(boardId: Int): Int
+    fun getPollIdByBoardId(boardId: Int): Int?
 
     fun selectPollInfoById(pollId: Int, userId: Int): PollInfoDTO
 
+    fun selectPollInfo(pollId: Int): PollInfoDTO
+
+    fun selectPollInfoByBoardId(boardId: Int, userId: Int): PollInfoDTO
+
+    fun isPollOption(pollId: Int, pollOptionId: Int): Int
+
+    fun isExistencePollByBoardId(boardId: Int): Int
+
+    fun deletePollByBoardId(boardId: Int): Int
+
+    fun deletePollByPollId(pollId: Int): Int
+
+    fun closePollByBoardId(boardId: Int): Int
+
+    fun closePollByPollId(pollId: Int): Int
+
+    fun isPollUserByPollId(userId: Int, pollId: Int): Int
+
+    fun isPollUserByBoardId(userId: Int, boardId: Int): Int
+
+    fun isPolledUser(userId: Int, pollId: Int): Int?
 }

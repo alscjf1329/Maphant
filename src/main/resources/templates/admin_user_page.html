@@ -1,0 +1,64 @@
+<body>
+<div class="container">
+  <section class="right-section">
+    <h2>유저 정지</h2>
+    <form id="user-sanction-form">
+      <div class="input-row">
+        <label for="userId"><span>* </span>유저 ID</label>
+        <input type="text" id="userId" name="userId" required>
+      </div>
+      <div class="width-style">
+        <div class="input-row-time">
+        <label for="sanctionDays"><span>* </span>일</label>
+        <input type="text" id="sanctionDays" name="sanctionDays" placeholder="일">
+        </div>
+        <div class="input-row-time">
+          <label for="sanctionHours"><span>* </span>시간</label>
+          <input type="text" id="sanctionHours" name="sanctionHours" placeholder="시간">
+        </div>
+        <div class="input-row-time">
+          <label for="sanctionMinutes"><span>* </span>분</label>
+          <input type="text" id="sanctionMinutes" name="sanctionMinutes" placeholder="분">
+        </div>
+      </div>
+      <div class="input-row">
+        <label for="sanctionReason"><span>* </span>제재 이유</label>
+        <textarea id="sanctionReason" name="sanctionReason" rows="4" required></textarea>
+      </div>
+      <br>
+      <button type="submit" class="user-sanction-button">유저 정지</button>
+    </form>
+    <h2>정지 리스트</h2>
+    <table>
+      <thead>
+      <tr>
+        <th>
+          유저 ID
+        </th>
+        <th>
+          유저 닉네임
+        </th>
+        <th>
+          유저 이메일
+        </th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="sanction : ${userSanction}">
+        <td th:text="${sanction.userId}">
+        </td>
+        <td th:text="${sanction.userNickname}">
+        </td>
+        <td th:text="${sanction.userEmail}">
+        </td>
+        <td>
+            <button th:data-user-id="${sanction.userId}" class="info-button-sanction">자세히보기</button>
+            <button th:data-user-id="${sanction.userId}" class="unSanction-button">정지 해제</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+<script th:src="@{/admin_board_page.js}"></script>
+</body>

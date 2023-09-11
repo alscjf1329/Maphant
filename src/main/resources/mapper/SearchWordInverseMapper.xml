@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tovelop.maphant.mapper.SearchWordInverseMapper">
+    <select id="searchBoardListByWords" resultType="BoardSearchResponseDto">
+        SELECT
+            b.id AS boardId,
+            title,
+            SUBSTRING(b.body, 1, 30) as body,
+            b.created_at AS createdAt,
+            b.modified_at AS modifiedAt,
+            IF(is_anonymous, '익명',u.nickname) AS userNickname,
+            comment_cnt AS commentCnt,
+            like_cnt AS likeCnt,
+            is_anonymous AS isAnonymous,
+            is_hide AS isHide,
+            IF(blike.user_id IS NOT NULL, 1, 0) as isLike,
+            b.images_url as imagesUrlString,
+            GROUP_CONCAT(t.name ORDER BY t.name ASC SEPARATOR ',') as tagStrings,
+            type_id AS typeId,
+            bt.name AS type
+        FROM board b
+             INNER JOIN (
+                        SELECT swi.board_id, SUM(swi.tf * swi.idf) AS total_tfidf_value
+                        FROM search_word n
+                                 JOIN search_word_inverse swi  ON swi.search_word_id = n.id
+                        WHERE n.word IN
+                            <foreach item="word" index="index" collection="wordList" open="(" separator="," close=")">
+                                #{word}
+                            </foreach>
+                        GROUP BY swi.board_id
+                    ) AS tfidf ON b.id = tfidf.board_id
+            INNER JOIN user u ON b.user_id = u.id
+            INNER JOIN board_type bt ON b.type_id = bt.id
+            LEFT OUTER JOIN board_like blike ON b.id = blike.board_id AND blike.user_id = #{userId}
+            LEFT OUTER JOIN board_tag ON b.id = board_tag.board_id
+            LEFT OUTER JOIN tag t ON board_tag.tag_id = t.id
+        WHERE
+            is_hide = 0 AND
+            b.state = 0 AND
+            b.category_id = #{categoryId}
+            <if test="boardTypeId != null">
+                AND b.type_id = #{boardTypeId}
+            </if>
+        GROUP BY b.id
+        ORDER BY tfidf.total_tfidf_value DESC
+        LIMIT #{pagingDto.recordSize} OFFSET #{pagingDto.offset}
+    </select>
+    <select id="getCountSearchBoardListByWords">
+        SELECT COUNT(*)
+        FROM board b
+        INNER JOIN (
+                SELECT swi.board_id, SUM(swi.tf * swi.idf) AS total_tfidf_value
+                FROM search_word n
+                JOIN search_word_inverse swi  ON swi.search_word_id = n.id
+                WHERE n.word IN
+                <foreach item="word" index="index" collection="wordList" open="(" separator="," close=")">
+                    #{word}
+                </foreach>
+                GROUP BY swi.board_id
+        ) AS tfidf ON b.id = tfidf.board_id
+        WHERE
+            is_hide = 0 AND
+            b.state = 0 AND
+            b.category_id = #{categoryId}
+            <if test="boardTypeId != null">
+                AND b.type_id = #{boardTypeId}
+            </if>
+    </select>
+
+    <update id="updateIdf">
+        UPDATE search_word_inverse swi
+        INNER JOIN search_word sw ON swi.search_word_id = sw.id
+        SET swi.idf = LN(#{boardCount} / (1 + sw.df))
+    </update>
+    
+    <insert id="insertSearchWordInverse">
+        insert into search_word_inverse (board_id, search_word_id, tf, idf)
+        values (#{boardId}, #{wordId}, #{tf}, #{idf})
+    </insert>
+
+    <insert id="insertSearchWordInverses">
+        INSERT INTO search_word_inverse (board_id, search_word_id, tf, idf)
+        VALUES
+        <foreach collection="inverseDataList" item="data" separator=",">
+            (#{data.board_id}, #{data.search_word_id}, #{data.tf}, #{data.idf})
+        </foreach>
+    </insert>
+
+    <delete id="deleteByBoardId">
+        DELETE
+        FROM search_word_inverse
+        WHERE board_id = #{boardId}
+    </delete>
+</mapper>

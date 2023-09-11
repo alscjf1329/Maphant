@@ -40,11 +40,17 @@ body {
     color: #d2d2d2;
 }
 
-#login-form > input[type="button"] {
+#login-form > input[type="submit"] {
     color: #fff;
     background-color: #6a24fe;
     font-size: 16px;
     margin-top: 20px;
+    transition: 0.3s;
+}
+
+#login-form > input[type="submit"]:hover {
+    background-color: rgba(106, 36, 254, 0.85);
+    transform: scale(0.95);
 }
 
 #login-form > input[type="checkbox"] {

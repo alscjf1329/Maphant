@@ -27,9 +27,9 @@ class AwsS3Service(
     fun uploadFiles(files:List<MultipartFile>): List<String> {
         var imageUrls = ArrayList<String>()
         for (file in files) {
-            val originalFileName: String? = file.originalFilename
+            val originalFileName: String = getRandom8CharsFromUUID() + "-" + file.originalFilename
 
-            if(uploadUtils.isNotImageFile(originalFileName as String))
+            if(uploadUtils.isNotImageFile(originalFileName))
                 throw IllegalArgumentException("png, jpeg, jpg에 해당하는 파일만 업로드할 수 있습니다.");
 
             val objectMetadata = ObjectMetadata()
@@ -50,8 +50,8 @@ class AwsS3Service(
 
     fun uploadFile(image: MultipartFile): String {
         lateinit var imageUrl: String
-        val originalFileName: String? = image.originalFilename
-        if (uploadUtils.isNotImageFile(originalFileName as String))
+        val originalFileName: String = getRandom8CharsFromUUID() + "-" + image.originalFilename
+        if (uploadUtils.isNotImageFile(originalFileName))
             throw IllegalArgumentException("png, jpeg, jpg에 해당하는 파일만 업로드할 수 있습니다.");
         val objectMetadata = ObjectMetadata()
         objectMetadata.setContentLength(image.getSize())
@@ -65,5 +65,10 @@ class AwsS3Service(
         }
         return imageUrl
     }
+
+    fun getRandom8CharsFromUUID(): String {
+        return UUID.randomUUID().toString().substring(0, 8)
+    }
+
 
 }

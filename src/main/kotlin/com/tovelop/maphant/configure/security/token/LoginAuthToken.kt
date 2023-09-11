@@ -15,4 +15,6 @@ class LoginAuthToken(
     override fun getPrincipal() = username
 
     override fun isAuthenticated() = userData != null
+
+    fun getUserId() = userData?.getUserID()
 }

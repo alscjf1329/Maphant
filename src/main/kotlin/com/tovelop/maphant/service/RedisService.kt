@@ -45,8 +45,10 @@ class RedisService(@Autowired private val template: RedisTemplate<String, String
         val timeout = template.getExpire(key)
         set(key, value)
 
-        if (timeout > 0) {
+        if (timeout >= 0) {
             expire(key, timeout)
+        } else if(timeout == -1L) {
+            template.delete(key)
         }
     }
 }

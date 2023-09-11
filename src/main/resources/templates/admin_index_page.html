@@ -1,10 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>과끼리 관리자 페이지</title>
+    <meta charset="UTF-8">
+    <title>과끼리 관리자 페이지</title>
+    <link rel="stylesheet" th:href="@{/admin_index_page.css}">
+    <link rel="stylesheet" th:href="@{/admin_board_page.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/admin_statistics_page.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-  <h1>과끼리 관리자 페이지</h1>
+<header>
+    <h1>관리자 대시보드에 오신 것을 환영합니다</h1>
+</header>
+<div class="menu-bar">
+    <a href="#" class="active" onclick="setActiveMenu(this, '/admin/board')"><i class="board"></i>게시판</a>
+    <a href="#" onclick="setActiveMenu(this, '/admin/comment')"><i class="comment"></i>댓글</a>
+    <a href="#" onclick="setActiveMenu(this, '/admin/user')"><i class="user"></i>유저</a>
+    <a href="#" onclick="setActiveMenu(this, '/admin/statistics')"><i class="statistics"></i>통계</a>
+</div>
+<div id="content">
+</div>
+<footer>
+    <p>
+        &copy; 2023 관리자 대시보드
+    </p>
+</footer>
+<script th:src="@{/admin_board_page.js}"></script>
+<script>
+    async function setActiveMenu(menuItem, contentUrl) {
+        const menuItems = document.querySelectorAll('.menu-bar a');
+        menuItems.forEach(function(item) {
+            item.classList.remove('active');
+        });
+
+        menuItem.classList.add('active');
+
+        const contentDiv = $('#content');
+        contentDiv.load(contentUrl);
+    }
+</script>
 </body>
 </html>

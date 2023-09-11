@@ -1,0 +1,45 @@
+<body>
+<div class="container">
+  <section class="left-section">
+    <section class="comment-section">
+      <h2>댓글 신고 목록</h2>
+      <button class="sort-button" data-sort-type="mostReportedRanking" data-section="comment">
+        신고 횟수순
+      </button>
+      <button class="sort-button" data-sort-type="time" data-section="comment">
+        시간순
+      </button>
+      <table>
+        <thead>
+        <tr>
+          <th>
+            댓글 ID
+          </th>
+          <th>
+            유저 ID
+          </th>
+          <th>
+            내용
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="report : ${commentReport}">
+          <td th:text="${report.commentId}">
+          </td>
+          <td th:text="${report.commentUserEmail}">
+          </td>
+          <td th:text="${report.commentBody}">
+          </td>
+          <td>
+            <button th:data-comment-id="${report.commentId}" class="info-button-comment">자세히보기</button>
+            <button th:data-comment-id="${report.commentId}" class="sanction-button-comment">제재</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+  </section>
+</div>
+<script th:src="@{/admin_board_page.js}"></script>
+</body>

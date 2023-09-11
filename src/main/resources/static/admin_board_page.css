@@ -1,0 +1,146 @@
+/* 전체 페이지 스타일 */
+* {
+    font-family: 'Noto Sans KR','Noto Sans Korean', "Nanum Gothic", sans-serif !important;
+    padding: 0;
+    margin: 0;
+    border: none;
+    box-sizing: border-box; /* 추가: 컨텐츠 크기 계산을 위해 */
+}
+.input-row {
+    display: flex;
+    align-items: center;
+}
+
+/* 본문 스타일 */
+body {
+    font-size: 14px;
+    background-color: white;
+}
+
+/* 컨테이너 스타일 */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+}
+
+/* 왼쪽 및 오른쪽 섹션 스타일 */
+.left-section,
+.right-section {
+    flex: 1;
+    margin: 0 20px;
+}
+
+/* 댓글 스타일 */
+.comment-section {
+    flex: 1;
+}
+
+/* 섹션 스타일 */
+section {
+    margin: 20px 0;
+}
+
+/* 테이블 스타일 */
+table {
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+/* 버튼 스타일 */
+button {
+    background-color: black;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+input::placeholder {
+    color: #d9d9d9;
+}
+.input-row-time,
+.input-row {
+    margin: 10px 0;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.width-style {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.input-row-time label,
+.input-row label {
+    display: inline-block;
+    position: absolute;
+    top: -5px;
+    left: 14px;
+    padding: 10px;
+    background: white;
+    font-size: 14px;
+    color: #888;
+    font-weight: bold;
+}
+
+.input-row-time label span,
+.input-row label span {
+    color: #da4841;
+    vertical-align: -1px;
+}
+
+.input-row-time input{
+    width: 100%;
+    border: 1px solid #dddddd !important;
+    font-size: 1rem;
+    line-height: 1.45;
+    letter-spacing: -0.04rem;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 12px;
+}
+
+.input-row input,
+.input-row textarea {
+    width: 20%;
+    border: 1px solid #dddddd !important;
+    font-size: 1rem;
+    line-height: 1.45;
+    letter-spacing: -0.04rem;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 12px;
+}
+.input-row-time label,
+.input-row label {
+    display: inline-block;
+    position: absolute;
+    top: -5px;
+    left: 14px;
+    padding: 10px;
+    background: white;
+    font-size: 14px;
+    color: #888;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: black;
+}
+
+button a {
+    color: white;
+    text-decoration: none;
+}

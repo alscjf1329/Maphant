@@ -14,4 +14,7 @@ data class RoomDto(
     // unread_count 추가
     val sender_unread_count: Int,
     val receiver_unread_count: Int,
+    //cursor 추가
+    val sender_dm_cursor: Int,
+    val receiver_dm_cursor:Int,
 )

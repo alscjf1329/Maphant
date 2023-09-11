@@ -1,0 +1,59 @@
+<body>
+<div class="container">
+    <div class="section-top-statistic">
+        <div class="date_info">
+            <div class="date_info_inner">
+                <a href="#" class="date_button_on">
+                    <span class="blind"><</span>
+                </a>
+                <span class="date_txt" th:text="${dateInfo}"></span>
+                <a href="#" class="date_button_next">
+                    <span class="blind">></span>
+                </a>
+            </div>
+        </div>
+        <div class="info_box" th:text="${infoBoxContent}">
+            <!-- 정보 박스 내용을 표시합니다. -->
+        </div>
+    </div>
+    <div>
+        <div class="section-graph">
+            <div class="graph-list">
+                <ul class="list-sub-title">
+                    <li class="sub-title active">
+                        <a href="#" class="title-area">
+                            <span class="title-txt">방문자수</span>
+                        </a>
+                    </li>
+                    <li class="sub-title">
+                        <a href="#" class="title-area">
+                            <span class="title-txt">게시글수</span>
+                        </a>
+                    </li>
+                    <li class="sub-title">
+                        <a href="#" class="title-area">
+                            <span class="title-txt">댓글수</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="graph-area">
+                <div class="graph-title">
+                    <h4>데이터 통계</h4>
+                </div>
+                <div class="graph">
+                    <!-- 그래프가 표시될 곳 -->
+                    <canvas id="myChart"></canvas>
+                </div>
+                <div class="graph-element-list">
+                    <!-- 그래프 요소 리스트 -->
+                    <input type="hidden" th:name="visitorCounts" th:value="${visitorCounts}" />
+                    <input type="hidden" th:name="postCounts" th:value="${postCounts}" />
+                    <input type="hidden" th:name="commentCounts" th:value="${commentCounts}" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script th:src="@{/admin_statistics_page.js}"></script>

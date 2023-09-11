@@ -20,6 +20,21 @@ interface DmMapper {
         vararg visible: VisibleChoices
     ): List<ResultDmDto>
 
+    fun findDmListWithPaging(
+        isSender: Boolean,
+        room_id: Int,
+        params: PagingDto,
+        cursor:Int
+    ): List<ResultDmDto>
+
+    fun findDmListWithCursorBasedPaging(
+        isSender: Boolean,
+        room_id: Int,
+        pagingCursor:Int,
+        dmCursor:Int,
+        limit:Int
+    ): List<ResultDmDto>
+
     fun updateNotReadDm(room_id: Int, is_from_sender: Boolean): Boolean
 
     fun updateSenderUnreadDmZero(room_id: Int)
@@ -30,4 +45,7 @@ interface DmMapper {
     fun updateDmVisible(room_id: Int, oldVisible: VisibleChoices, newVisible: VisibleChoices): Boolean
 
     fun findDmCount(room_id: Int, vararg visible: VisibleChoices): Int
+    fun findDmCount(room_id: Int, cursor: Int): Int
+
+    fun findLastDmId(room_id: Int):Int
 }
