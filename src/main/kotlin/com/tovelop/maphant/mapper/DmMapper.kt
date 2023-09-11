@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository
 @Mapper
 @Repository
 interface DmMapper {
-    fun createDm(dmDto: DmDto): Boolean
+    fun createDm(dmDto: DmDto): Int
     fun findDmList(room_id: Int, vararg visible: VisibleChoices): List<DmDto>
 
     fun findDmListWithPaging(

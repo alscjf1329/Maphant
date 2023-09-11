@@ -1,0 +1,70 @@
+* {
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+body {
+    font-size: 14px;
+    font-family: "Roboto", "sans-serif";
+}
+
+.login-wrapper {
+    width: 400px;
+    height: 350px;
+    padding: 40px;
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.login-wrapper > h2 {
+    font-size: 24px;
+    color: #6a24fe;
+    margin-bottom: 20px;
+}
+
+#login-form > input {
+    width: 100%;
+    height: 48px;
+    background-color: #f8f8f8;
+    padding: 0 10px;
+    box-sizing: border-box;
+    margin-bottom: 16px;
+    border-radius: 6px;
+}
+
+#login-form > input::placeholder {
+    color: #d2d2d2;
+}
+
+#login-form > input[type="button"] {
+    color: #fff;
+    background-color: #6a24fe;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+#login-form > input[type="checkbox"] {
+    display: none;
+}
+
+#login-form > label {
+    color: #999999;
+}
+
+/*#login-form input[type="checkbox"] + label {*/
+/*    cursor: pointer;*/
+/*    padding-left: 26px;*/
+/*    background-image: url("/public/checkbox.png");*/
+/*    background-repeat: no-repeat;*/
+/*    background-size: contain;*/
+/*}*/
+
+/*#login-form input[type="checkbox"]:checked + label {*/
+/*    background-image: url("/public/checkbox-active.png");*/
+/*    background-repeat: no-repeat;*/
+/*    background-size: contain;*/
+/*}*/

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository
 @Mapper
 interface CommentMapper {
     fun findAllComment(boardId: Int, userId: Int, params: PagingDto): List<CommentExtDTO>
-    fun findAllCommentByUser(userId: Int, params: PagingDto):List<CommentExtDTO>
+    fun findAllCommentByUser(userId: Int, params: PagingDto): List<CommentExtDTO>
     fun insertComment(commentDTO: CommentDTO)
     fun deleteComment(userId: Int, commentId: Int)
     fun updateComment(updateCommentDTO: UpdateCommentDTO)
@@ -26,4 +26,5 @@ interface CommentMapper {
     fun getCommentCount(boardId: Int): Int
     fun insertReply(replyDTO: ReplyDTO)
     fun changeState(commentId: Int, state: Int)
+    fun getBoardUserId(boardId: Int): Int
 }

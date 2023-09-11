@@ -4,11 +4,18 @@ package com.tovelop.maphant.controller
 import com.tovelop.maphant.configure.security.token.TokenAuthToken
 import com.tovelop.maphant.dto.*
 import com.tovelop.maphant.service.BoardService
-import com.tovelop.maphant.service.RateLimitingService
+import com.tovelop.maphant.type.paging.PagingDto
+import com.tovelop.maphant.type.paging.PagingResponse
 import com.tovelop.maphant.type.response.Response
 import com.tovelop.maphant.type.response.ResponseUnit
+import com.tovelop.maphant.utils.SecurityHelper.Companion.isLogged
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.Valid
+import org.checkerframework.common.value.qual.EnumVal
+import com.tovelop.maphant.service.RateLimitingService
 import com.tovelop.maphant.utils.SecurityHelper.Companion.isNotLogged
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
@@ -30,6 +37,23 @@ class BoardController(@Autowired val boardService: BoardService, @Autowired val 
         return ResponseEntity.ok().body(Response.success(sortCriterionMap.map { SortCriterionInfo(it.key, it.value) }))
     }
 
+    @GetMapping("/hot")
+    fun readHotBoard(
+        request: HttpServletRequest,
+        @RequestParam(required = false) boardTypeId: Int?,
+        @ModelAttribute @Valid pagingDto: PagingDto,
+        @RequestHeader("x-category") category: Int
+    ): ResponseEntity<Any> {
+        val auth = SecurityContextHolder.getContext().authentication as TokenAuthToken
+        val userId = auth.getUserId()
+        if (!boardService.isInCategory(category) || (boardTypeId != null && !(boardService.isInBoardTypeId(boardTypeId)) || boardTypeId == 0)) {
+            // 클라이언트가 존재하지 않는 카테고리나 게시판 유형을 요청한 경우
+            return ResponseEntity.badRequest().body(Response.error<Any>("존재하지 않는 게시판 유형입니다."))
+        }
+
+        return ResponseEntity.ok()
+            .body(Response.success(boardService.findHotBoardList(userId, category, boardTypeId, pagingDto)))
+    }
     data class BoardListInfo(val name: String, val list: List<PageBoardDTO>)
 
     @GetMapping("")

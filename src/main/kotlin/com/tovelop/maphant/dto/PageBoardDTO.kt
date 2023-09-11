@@ -12,5 +12,6 @@ data class PageBoardDTO(
     val likeCnt: Int,
     val isAnonymous: Int,
     val isHide: Int,
-    var isLike: Int?
+    var isLike: Int?,
+    val imagesUrl: String? = null
 )

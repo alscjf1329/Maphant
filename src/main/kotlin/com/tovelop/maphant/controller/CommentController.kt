@@ -3,6 +3,7 @@ package com.tovelop.maphant.controller
 import com.tovelop.maphant.configure.security.token.TokenAuthToken
 import com.tovelop.maphant.dto.*
 import com.tovelop.maphant.service.CommentService
+import com.tovelop.maphant.service.FcmService
 import com.tovelop.maphant.type.paging.PagingDto
 import com.tovelop.maphant.type.paging.PagingResponse
 import com.tovelop.maphant.type.response.Response
@@ -16,7 +17,10 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/comment")
-class CommentController(@Autowired val commentService: CommentService) {
+class CommentController(
+    @Autowired val commentService: CommentService,
+    @Autowired private val fcmService: FcmService
+) {
 
 
     data class CommentRequest(
@@ -46,7 +50,12 @@ class CommentController(@Autowired val commentService: CommentService) {
             return ResponseEntity.badRequest().body(Response.error("게시글을 찾을 수 없습니다."))
         }
 
+
         val commentTime = comment.list.map {
+            if (it.is_anonymous) {
+//                it.user_id = 0
+                it.nickname = "익명"
+            }
             if (it.modified_at == null) {
                 it.timeFormat(it, it.created_at.formatTime())
             } else {
@@ -66,6 +75,13 @@ class CommentController(@Autowired val commentService: CommentService) {
             return ResponseEntity.badRequest().body(Response.error("댓글은 255자 이내로 작성해주세요."))
         }
         commentService.insertComment(commentDTO)
+        fcmService.send(
+            FcmMessageDTO(
+                commentService.getBoardUserId(commentDTO.board_id),
+                "댓글이 달렸습니다",
+                commentDTO.body
+            )
+        )
         return ResponseEntity.ok().body(Response.stateOnly(true))
     }
 
@@ -80,6 +96,13 @@ class CommentController(@Autowired val commentService: CommentService) {
             return ResponseEntity.badRequest().body(Response.error("댓글은 255자 이내로 작성해주세요."))
         }
         commentService.insertReply(replyDTO)
+        fcmService.send(
+            FcmMessageDTO(
+                commentService.getBoardUserId(replyDTO.parent_id),
+                "댓글이 달렸습니다",
+                replyDTO.body
+            )
+        )
         return ResponseEntity.ok().body(Response.stateOnly(true))
     }
 

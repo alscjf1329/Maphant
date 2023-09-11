@@ -27,22 +27,27 @@ class ProfileController(
 ) {
 
     @GetMapping
-    fun getProfileImage(): ResponseEntity<Response<ProfileImageDto>> {
+    fun getProfile(): ResponseEntity<Response<ProfileNicknameAndBodyAndImageDto>> {
         val auth = SecurityContextHolder.getContext().authentication!! as TokenAuthToken
         val userId: Int = auth.getUserId()!!
 
-        return ResponseEntity.ok().body(Response.success(profileService.getProfileImage(userId)));
+        return ResponseEntity.ok().body(Response.success(profileService.getNicknameAndBodyAndImage(userId)));
     }
 
     @PatchMapping
-    fun updateProfileImage(@RequestParam file: MultipartFile): ResponseEntity<Response<String>> {
+    fun updateProfile(@RequestParam nickname:String?, @RequestParam body:String?, @RequestParam file: MultipartFile?): ResponseEntity<Response<String>> {
         val auth = SecurityContextHolder.getContext().authentication!! as TokenAuthToken
         val userId: Int = auth.getUserId()!!
 
-        val imageUrl: String = awsS3Service.uploadFile(file)
-        profileService.updateProfileImage(userId, imageUrl, file)
+        if(nickname!=null)profileService.updateProfileNickname(userId, nickname)
+        if(body!=null)profileService.updateProfileBody(userId, body)
+        if(file!=null){
+            val imageUrl: String = awsS3Service.uploadFile(file)
+            profileService.updateProfileImage(userId, imageUrl, file)
+        }
 
-        return ResponseEntity.ok().body(Response.success(imageUrl));
+
+        return ResponseEntity.ok().body(Response.success("프로필 수정 성공"));
     }
 
     @GetMapping("/comment")
@@ -56,7 +61,7 @@ class ProfileController(
     @GetMapping("/board")
     fun getBoardList(@ModelAttribute @Valid pagingDto: PagingDto): ResponseEntity<Response<PagingResponse<BoardResDto>>> {
         val auth = SecurityContextHolder.getContext().authentication!! as TokenAuthToken
-        val userId: Int = auth.getUserId()!!
+        val userId: Int = auth.getUserId()
 
         return ResponseEntity.ok().body(Response.success(profileService.getBoardsList(userId, pagingDto)));
     }

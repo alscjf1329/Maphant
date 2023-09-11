@@ -1,8 +1,7 @@
 package com.tovelop.maphant.dto
 
-import java.time.LocalDate
-
-data class ProfileImageDto(
+data class ProfileNicknameAndBodyAndImageDto(
     val user_nickname : String,
+    val body : String?,
     val profile_img : String?,
 )

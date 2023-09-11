@@ -11,16 +11,15 @@ import org.springframework.web.multipart.MultipartFile
 @Repository
 interface ProfileMapper {
     // user테이블의 id 값으로 프로필 사진 불러오기
-    fun findImageById(userId:Int):ProfileImageDto
+    fun findNicknameAndBodyAndImageById(userId:Int):ProfileNicknameAndBodyAndImageDto
 
     fun findById(userId: Int): ProfileDto?
-    
-    // 프로필 사진 바꾸기
-    // 프로필 테이블에 있는
+
     fun updateProfileImage(userId: Int, imageUrl:String):Boolean
 
-    //회원의 모든 작성글 목록 불러오기(board로 옮겨야함)
-    fun findAllBoardsById(userId:Int): List<BoardDTO>
+    fun updateProfileNickname(userId: Int, nickname: String):Boolean
+
+    fun updateProfileBody(userId: Int, body: String):Boolean
 
     fun findAllBoardByIdWithPaging(userId: Int, params: PagingDto): List<BoardResDto>
 

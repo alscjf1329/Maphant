@@ -1,6 +1,7 @@
 package com.tovelop.maphant.controller
 
 import com.tovelop.maphant.configure.security.token.TokenAuthToken
+import com.tovelop.maphant.dto.DmDto
 import com.tovelop.maphant.dto.RequestSendDmDto
 import com.tovelop.maphant.dto.user.UserNicknameDTO
 import com.tovelop.maphant.service.DmService
@@ -17,14 +18,13 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/dm")
 class DmController(private val dmService: DmService, private val userService: UserService) {
     @PostMapping
-    fun sendDM(@RequestBody @Validated requestSendDmDto: RequestSendDmDto): SuccessResponse<String> {
+    fun sendDM(@RequestBody @Validated requestSendDmDto: RequestSendDmDto): SuccessResponse<DmDto> {
         val auth = SecurityContextHolder.getContext().authentication!! as TokenAuthToken
         val userNickname = auth.getUserData().nickname
         val userId: Int = auth.getUserId()
 
         // 서비스 호출
-        dmService.sendDm(userNickname, userId, requestSendDmDto.receiver_id as Int, requestSendDmDto.content as String)
-        return SuccessResponse("메시지를 전송하였습니다.")
+        return SuccessResponse(dmService.sendDm(userNickname, userId, requestSendDmDto.receiver_id as Int, requestSendDmDto.content as String))
     }
 
     @GetMapping("/unread/count")

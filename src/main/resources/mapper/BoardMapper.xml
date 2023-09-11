@@ -68,7 +68,8 @@
                pageBoards.like_cnt,
                pageBoards.is_anonymous,
                pageBoards.is_hide,
-               board_like.user_id
+               board_like.user_id,
+               pageBoards.images_url
         from (select boards.board_id,
                      boards.title,
                      boards.created_at,
@@ -78,7 +79,8 @@
                      boards.comment_cnt,
                      boards.like_cnt,
                      boards.is_hide,
-                     boards.is_anonymous
+                     boards.is_anonymous,
+                     boards.images_url
               from (select board.id as board_id,
                            board.title,
                            board.created_at,
@@ -87,7 +89,8 @@
                            board.comment_cnt,
                            board.like_cnt,
                            board.is_hide,
-                           board.is_anonymous
+                           board.is_anonymous,
+                            board.images_url
                     from (select *
                           from board
                           where category_id = #{categoryId}
@@ -161,5 +164,83 @@
     <select id="getAllBoardType" resultType="BoardTypeDTO">
         select *
         from board_type
+    </select>
+
+    <select id="findHotBoardsWithBoardType" resultType="HotBoardDto">
+        SELECT b.id AS boardId,
+               title,
+               body,
+               b.user_id AS userId,
+               IF(is_anonymous, '익명',u.nickname) AS userNickname,
+               type_id AS typeId,
+               t.name AS type,
+               comment_cnt AS commentCnt,
+               like_cnt AS likeCnt,
+               is_anonymous AS isAnonymous,
+               is_hide AS isHide,
+               IF(blike.user_id IS NOT NULL, 1, 0) as isLike,
+               b.created_at AS createdAt,
+               b.modified_at AS modifiedAt
+        FROM board b
+            INNER JOIN user u ON b.user_id = u.id
+            INNER JOIN board_type t ON b.type_id = t.id
+            LEFT OUTER JOIN board_like blike ON b.id = blike.board_id AND blike.user_id = #{userId}
+        WHERE
+            is_hide = 0 AND
+            b.state = 0 AND
+            category_id = #{categoryId} AND
+            type_id = #{boardType} AND
+            like_cnt >= 10
+        ORDER BY hot(like_cnt, b.created_at) + RAND(#{seed}) DESC
+        LIMIT #{pagingDto.recordSize} OFFSET #{pagingDto.offset}
+    </select>
+
+    <select id="getHotBoardCountWithBoardType">
+        SELECT COUNT(*)
+        FROM board
+        WHERE
+            is_hide = 0 AND
+            state = 0 AND
+            category_id = #{categoryId} AND
+            type_id = #{boardType} AND
+            like_cnt >= 10
+    </select>
+
+    <select id="findHotBoards" resultType="HotBoardDto">
+        SELECT b.id AS boardId,
+               title,
+               body,
+               b.user_id AS userId,
+               IF(is_anonymous, '익명',u.nickname) AS userNickname,
+               type_id AS typeId,
+               t.name AS type,
+               comment_cnt AS commentCnt,
+               like_cnt AS likeCnt,
+               is_anonymous AS isAnonymous,
+               is_hide AS isHide,
+               IF(blike.user_id IS NOT NULL, 1, 0) as isLike,
+               b.created_at AS createdAt,
+               b.modified_at AS modifiedAt
+        FROM board b
+                 INNER JOIN user u ON b.user_id = u.id
+                 INNER JOIN board_type t ON b.type_id = t.id
+                 LEFT OUTER JOIN board_like blike ON b.id = blike.board_id AND blike.user_id = #{userId}
+        WHERE
+            is_hide = 0 AND
+            b.state = 0 AND
+            category_id = #{categoryId} AND
+            like_cnt >= 10
+        ORDER BY hot(like_cnt, b.created_at) + RAND(#{seed}) DESC
+        LIMIT #{pagingDto.recordSize} OFFSET #{pagingDto.offset}
+    </select>
+
+    <select id="getHotBoardCount">
+        SELECT COUNT(*)
+        FROM board
+        WHERE
+            is_hide = 0 AND
+            state = 0 AND
+            category_id = #{categoryId} AND
+            like_cnt >= 10
     </select>
 </mapper>

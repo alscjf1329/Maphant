@@ -8,8 +8,9 @@
         FROM profile
         WHERE user_id = #{user_id}
     </select>
-    <select id="findImageById" resultType="ProfileImageDto">
+    <select id="findNicknameAndBodyAndImageById" resultType="ProfileNicknameAndBodyAndImageDto">
         SELECT user.nickname as user_name,
+               body,
                profile_img
         FROM user LEFT OUTER JOIN profile
             ON profile.user_id = user.id
@@ -22,6 +23,18 @@
         WHERE user_id = #{userId}
     </update>
 
+    <update id="updateProfileNickname">
+        UPDATE user
+        SET user.nickname = #{nickname}
+        WHERE user.id = #{userId}
+    </update>
+
+    <update id="updateProfileBody">
+        UPDATE profile
+        SET body = #{body}
+        WHERE user_id = #{userId}
+    </update>
+
     <insert id="insertProfile">
         INSERT INTO profile (user_id, profile_img)
         VALUES (#{userId}, #{imageUrl})
@@ -29,9 +42,9 @@
 
     <select id="findAllBoardByIdWithPaging" resultType="BoardResDto">
         SELECT
-            board.id as id,
+            b.id as id,
             category_id,
-            user_id,
+            b.user_id as user_id,
             board_type.name as type,
             title,
             body,
@@ -43,19 +56,22 @@
             comment_cnt,
             like_cnt,
             report_cnt,
-            images_url
-        FROM board
-                 INNER JOIN board_type ON board.id = board_type.id
-        WHERE user_id = #{userId}
-        ORDER BY created_at
-        LIMIT #{params.recordSize} OFFSET #{params.offset}
+            images_url,
+            IF(blike.user_id IS NOT NULL, 1, 0) as isLike
+        FROM board b
+                 INNER JOIN board_type ON b.type_id = board_type.id
+                 LEFT OUTER JOIN board_like blike ON b.id = blike.board_id AND blike.user_id = #{userId}
+        WHERE b.user_id = #{userId} AND
+              state = 0
         ORDER BY created_at DESC
+        LIMIT #{params.recordSize} OFFSET #{params.offset}
     </select>
 
     <select id="getBoardCount">
         SELECT COUNT(*)
         FROM board
-        WHERE user_id = #{userId}
+        WHERE user_id = #{userId} AND
+            state = 0
     </select>
 
 </mapper>

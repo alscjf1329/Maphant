@@ -12,7 +12,7 @@ enum class VisibleChoices {
 }
 
 data class DmDto(
-    val id: Int?,
+    var id: Int?,
     val is_from_sender: Boolean,
     val content: String,
     val time: LocalDateTime,

@@ -10,6 +10,7 @@
         <result property="name" column="name"/>
         <result property="nickname" column="nickname"/>
         <result property="role" column="role"/>
+        <result property="profileImg" column="profile_img"/>
         <collection property="category" ofType="UserDataCategoryDTO">
             <result property="categoryId" column="category_id"/>
             <result property="categoryName" column="category_name"/>
@@ -29,11 +30,13 @@
                ucm.category_id,
                c.name as category_name,
                ucm.major_id,
-               m.name as major_name
+               m.name as major_name,
+               p.profile_img
         from user u
                  left join user_category_major ucm on u.id = ucm.user_id
                  join category c on c.id = ucm.category_id
                  join major m on m.id = ucm.category_id
+                 left join profile p on u.id = p.user_id
         where email = '${email}';
     </select>
 </mapper>

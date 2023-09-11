@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.tovelop.maphant.mapper.DmMapper">
-    <insert id="createDm" parameterType="DmDto">
+    <insert id="createDm" parameterType="DmDto" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO dm (is_from_sender, content, is_read, time, room_id, visible)
         VALUES (#{is_from_sender},
                 #{content},

@@ -3,75 +3,158 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.tovelop.maphant.mapper.AdminPageMapper">
+    <update id="updateUserState">
+        update user
+        set state = #{state}
+        where id = #{userId}
+    </update>
     <select id="findBoardReportByReportedAt" resultType="AdminBoardReportDTO">
-        select boardId,
-               boardTitle,
-               boardBody,
-               boardUserId,
-               boardUserEmail,
-               reporterUserId,
-               reporterUserEmail,
-               boardReportedAt,
-               report.name as boardReportName
-        from (select boardId,
-                     boardTitle,
-                     boardBody,
-                     boardUserId,
-                     boardUserEmail,
-                     reporterUserId,
-                     user.email as reporterUserEmail,
-                     boardReportedAt,
-                     report_id
-              from (select reportBoard.id          as boardId,
-                           reportBoard.title       as boardTitle,
-                           reportBoard.body        as boardBody,
-                           reportBoard.user_id     as boardUserId,
-                           user.email              as boardUserEmail,
-                           reportBoard.user_id     as reporterUserId,
-                           reportBoard.reported_at as boardReportedAt,
-                           reportBoard.report_id
-                    from (select board.id,
-                                 board.title,
-                                 board.body,
-                                 board.user_id,
-                                 report.user_id,
-                                 report.reported_at,
-                                 report.report_id
-                          from (select board_id, user_id, report_id, reported_at, id
-                                from board_report
-                                order by reported_at
-                                    limit #{reportSize}
-                                offset 0) as report
-                                   join board on report.board_id = board.id) as reportBoard
-                             join user on reportBoard.user_id = user.id) as reportBoard
-                       join user on reportBoard.reporterUserId = user.id) as reportBoard
-                 join report on report_id = report.id
+        select board_id boardId, board.title boardTitle, board.body boardBody,
+               board_user.id boardUserId, board_user.email boardUserEmail
+        from (select board_id, user_id, report_id, reported_at, id
+              from board_report
+              order by reported_at
+                  limit #{reportSize} offset 0) as reports
+                 join board on reports.board_id = board.id
+                 join user board_user on reports.user_id = board_user.id
     </select>
     <select id="findBoardReportByMostReportedRanking" resultType="AdminBoardReportDTO">
-        select board_id
-        from board_report
-        group by board_id
-        order by count(*) desc
-            limit #{reportSize}
-        offset 0
+        select board_ids.board_id boardId, board.title boardTitle, board.body boardBody,
+               board_user.id boardUserId, board_user.email boardUserEmail
+        from (select board_id
+              from board_report
+              group by board_id
+              order by count(*) desc
+                  limit #{reportSize} offset 0) as board_ids
+                 join board on board_id = board.id
+                 join user board_user on board.user_id = board_user.id
     </select>
-    <!--    <update id="setBoardReport">-->
-    <!--        update board-->
-    <!--        set state = 2-->
-    <!--        where id in (select board_id-->
-    <!--                     from board_report-->
-    <!--                     where board_id in #{boardId})-->
-    <!--    </update>-->
-    <!--    <update id="setUserSanction">-->
-    <!--        insert into user_report(user_id, deadline_at, sanction_reason)-->
-    <!--        values (#{userId}, #{deadlineAt}, #{sanctionReason});-->
-    <!--        update user-->
-    <!--        set state = 2-->
-    <!--        where id in-->
-    <!--    </update>-->
-    <!--    <select id="findUserSanction">-->
-    <!--        select *-->
-    <!--        from user,-->
-    <!--             user_report-->
-    <!--    </select>-->
+    <select id="findBoardReportBySortType" resultType="AdminBoardReportDTO">
+    </select>
+    <select id="findBoardReportInfo" resultType="BoardReportInfoDTO">
+        select report_id reportId, reporter_user.id reporterUserId, reporter_user.email reporterUserEmail,
+               reported_at boardReportedAt, report.name boardReportName
+        from (select board_id, user_id, report_id, reported_at, id
+              from board_report
+              where board_id = #{boardId}) as reports
+                 join user reporter_user on reports.user_id = reporter_user.id
+                 join report on reports.report_id = report.id;
+    </select>
+
+    <select id="findCommentReportByReportedAt" resultType="AdminCommentReportDTO">
+        select reports.comment_id commentId, comment.body commentBody, user.id commentUserId,user.email commentUserEmail
+        from (select comment_id, user_id, report_id, id, reported_at
+              from comment_report
+              order by reported_at
+                  limit #{reportSize} offset 0) as reports
+                 join comment on reports.comment_id = comment.id
+                 join user on reports.user_id = user.id
+    </select>
+    <select id="findCommentReportByMostReportedRanking" resultType="AdminCommentReportDTO">
+        select comment_ids.comment_id commentId, comment.body commentBody,
+               user.id commentUserId,user.email commentUserEmail
+        from (select comment_id
+              from comment_report
+              group by comment_id
+              order by count(*) desc
+                  limit #{reportSize} offset 0) as comment_ids
+                 join comment on comment_ids.comment_id = comment.id
+                 join user on comment.user_id = user.id
+    </select>
+    <select id="findCommentReportBySortType" resultType="AdminCommentReportDTO">
+    </select>
+    <select id="findCommentReportInfo" resultType="CommentReportInfoDTO">
+        select report_id reportId, reporter_user.id reporterUserId, reporter_user.email reporterUserEmail,
+               reported_at commentReportedAt, report.name commentReportName
+        from (select comment_id, user_id, report_id, id, reported_at
+              from comment_report
+              where comment_id = #{commentId}) as reports
+                 join user reporter_user on reports.user_id = reporter_user.id
+                 join report on reports.report_id = report.id;
+    </select>
+
+    <insert id="insertUserReport">
+        insert into user_report(deadline_at, sanction_reason, user_id)
+        values (#{deadlineAt}, #{sanctionReason}, #{userId})
+    </insert>
+    <select id="findCurrentUserSanction" resultType="CurrentUserSanctionDTO">
+        select reportedUser.id userId, reportedUser.nickname userNickname, reportedUser.email userEmail,
+               user_report.deadline_at deadlineAt, user_report.sanction_reason sanctionReason
+        from (select * from user where state=2) as reportedUser
+                 join user_report on reportedUser.id = user_id and user_report.deadline_at > NOW()
+    </select>
+    <select id="findAllUserSanction" resultType="AllUserSanctionDTO">
+        select user.id userId, user.nickname userNickname, user.email userEmail
+        from (select distinct user_id from user_report) as reportedUserIds
+                 join user on reportedUserIds.user_id = user.id
+    </select>
+    <select id="findUserAllSanctionByUserId" resultType="UserReportDTO">
+        select *
+        from user_report
+        where user_id = #{userId}
+    </select>
+    <delete id="deleteRecentUserReportByUserId">
+        delete from user_report
+        where user_id = #{userId}
+          and deadline_at =
+              (select max(deadline_at)
+               from user_report
+               where user_id = #{userId});
+    </delete>
+    <update id="updateBoardStateByUserId">
+        update board
+        set state = #{afterState}
+        where user_id = #{userId} and state = #{beforeState}
+    </update>
+    <update id="updateCommentStateByUserId">
+        update comment
+        set state = #{afterState}
+        where user_id = #{userId} and state = #{beforeState}
+    </update>
+
+    <select id="findAllAppUserId" resultType="Int">
+        select user_id
+        from user_device
+    </select>
+    <select id="findUserReportList" resultType="UserDTO">
+        select id, nickname, name, email, state, role
+        from user
+        where id in #{userIdList} and state = 1
+    </select>
+    <select id="findBoardSanctionCountByUserId" resultType="Int">
+        select user_id, count(*)
+        from board
+        where board.state = 2
+        group by user_id
+        having count(*) >= 3
+    </select>
+    <select id="findCommentSanctionCountByUserId" resultType="Int">
+        select user_id, count(*)
+        from comment
+        where comment.state = 2
+        group by user_id
+        having count(*) >= 3
+    </select>
+    <select id="findBoardCommentSanctionCount" resultType="CountSanctionDTO">
+        select user_id, count(*)
+        from ((select user_id, id
+               from board
+               where board.state = 2)
+              union
+              (select user_id, id
+               from comment
+               where comment.state = 2))
+        group by user_id
+        having count(*) >= 5
+    </select>
+    <select id="findBoardReportInfoByUserId" resultType="BoardSanctionDTO">
+        select id, title, body, report_cnt reportCnt
+        from board
+        where user_id = #{userId} and state = 2
+    </select>
+    <select id="findCommentReportInfoByUserId" resultType="CommentSanctionDTO">
+        select id, board_id boardId, body, report_cnt reportCnt
+        from comment
+        where user_id = #{userId} and state = 2
+    </select>
 </mapper>

@@ -8,4 +8,5 @@ data class UserDataDTO(
     val nickname: String = "",
     val role: String = "",
     val category: List<UserDataCategoryDTO> = mutableListOf(),
+    val profileImg: String? = null,
 )

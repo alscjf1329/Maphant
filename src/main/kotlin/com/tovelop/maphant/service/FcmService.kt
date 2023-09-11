@@ -18,8 +18,6 @@ class FcmService(
         val body = fcmMessageDTO.body
         val tokens = fcmMessageDTO.getTokens()
 
-        println("$title\n$body")
-
         for (token in tokens!!) {
             val messageBuilder = Message.builder()
                 .setToken(token)

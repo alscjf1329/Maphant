@@ -1,6 +1,7 @@
 package com.tovelop.maphant.service
 
 import com.tovelop.maphant.dto.*
+import com.tovelop.maphant.mapper.BlockMapper
 import com.tovelop.maphant.mapper.DmMapper
 import com.tovelop.maphant.mapper.RoomMapper
 import com.tovelop.maphant.mapper.UserMapper
@@ -19,7 +20,8 @@ class DmService(
     private val roomMapper: RoomMapper,
     private val dmMapper: DmMapper,
     private val userMapper: UserMapper,
-    private val fcmService: FcmService
+    private val fcmService: FcmService,
+    private val blockMapper: BlockMapper
 ) {
 
     fun findUnReadDmCount(userId:Int):Int {
@@ -31,7 +33,8 @@ class DmService(
     }
 
     @Transactional
-    fun sendDm(userNickname:String, sender_id: Int, receiver_id: Int, content: String) {
+    fun sendDm(userNickname:String, sender_id: Int, receiver_id: Int, content: String): DmDto {
+        if(sender_id == receiver_id) throw IllegalStateException("자기 자신한테 쪽지를 보낼 수 없습니다.")
 
         val receiverNickname = userMapper.findNicknameIdBy(receiver_id);
         if(receiverNickname == null) {
@@ -41,6 +44,9 @@ class DmService(
         var is_sender: Boolean = true
         var room: RoomDto = roomMapper.findRoom(sender_id, receiver_id);
 
+        if(blockMapper.getBlockCount(sender_id, receiver_id)>0||blockMapper.getBlockCount(receiver_id, sender_id)>0){
+            throw IllegalStateException("쪽지를 보낼 수 없는 상대입니다.")
+        }
 
         if (room == null) { // 로그인한 사용자가 sender_id로 만든 대화방이 없는경우
             room = roomMapper.findRoom(receiver_id, sender_id);
@@ -69,17 +75,17 @@ class DmService(
         var is_from_sender: Boolean = false
         if (is_sender) is_from_sender = true
 
-        dmMapper.createDm(
-            DmDto(
-                id = null,
-                is_from_sender = is_from_sender,
-                content = content,
-                is_read = false,
-                time = LocalDateTime.now(),
-                room_id = room.id,
-                visible = VisibleChoices.BOTH
-            )
+        val dmDto = DmDto(
+            id = null,
+            is_from_sender = is_from_sender,
+            content = content,
+            is_read = false,
+            time = LocalDateTime.now(),
+            room_id = room.id,
+            visible = VisibleChoices.BOTH
         )
+
+        dmMapper.createDm(dmDto)
 
         // is_from_sender == true이면 receiver_unread_count ++
         if(is_from_sender){
@@ -94,6 +100,8 @@ class DmService(
             userNickname,
             content
         ))
+
+        return dmDto
     }
 
     @Transactional

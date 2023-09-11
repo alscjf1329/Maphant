@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice(assignableTypes = [RoomController::class, DmController::class])
 class DmExceptionHandler {
-    @ExceptionHandler(value = [NullPointerException::class])
+    @ExceptionHandler(value = [NullPointerException::class,IllegalStateException::class])
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    fun handleException(e: NullPointerException): ErrorResponse<String> {
+    fun handleException(e: RuntimeException): ErrorResponse<String> {
         val errorMessage = e.message ?: "알 수 없는 에러 발생"
         return ErrorResponse(errorMessage)
     }
